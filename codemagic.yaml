@@ -1,0 +1,53 @@
+# Codemagic CI configuration — builds an UNSIGNED iOS .ipa in the cloud
+# (Codemagic provides the Mac; you don't need one) so it can be installed
+# via Sideloadly/AltStore using a free Apple ID, without paying for the
+# Apple Developer Program.
+#
+# Setup:
+#   1. Push this project to a GitHub repo (Codemagic builds from git).
+#   2. Sign up at codemagic.io (free tier), connect your GitHub account,
+#      and add this repo as an app.
+#   3. Codemagic auto-detects this file. Just click "Start new build" and
+#      pick the "ios-unsigned-sideload" workflow below.
+#   4. When it finishes, download GoviTech-unsigned.ipa from the build's
+#      Artifacts tab.
+#   5. Open Sideloadly (sideloadly.io) on your Windows PC, plug in your
+#      iPhone, drag in the .ipa, sign in with your free Apple ID, click
+#      Start. First launch on the phone: Settings > General > VPN &
+#      Device Management > trust the developer profile.
+#
+# Note: apps signed this way (free Apple ID, no paid account) expire
+# after 7 days and need re-sideloading. Fine for testing/demos — just
+# re-run steps 4-5 before your actual pitch/demo day.
+
+workflows:
+  ios-unsigned-sideload:
+    name: iOS Unsigned Build for Sideloading
+    max_build_duration: 60
+    instance_type: mac_mini_m2
+    environment:
+      flutter: stable
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Get Flutter packages
+        script: |
+          flutter pub get
+
+      - name: Install CocoaPods dependencies
+        script: |
+          cd ios && pod install
+
+      - name: Build iOS app (no code signing)
+        script: |
+          flutter build ios --release --no-codesign
+
+      - name: Package into an unsigned .ipa
+        script: |
+          mkdir -p build/ios/iphoneos/Payload
+          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
+          cd build/ios/iphoneos
+          zip -r GoviTech-unsigned.ipa Payload
+
+    artifacts:
+      - build/ios/iphoneos/GoviTech-unsigned.ipa
