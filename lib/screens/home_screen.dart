@@ -12,6 +12,7 @@ import '../models/timeline_model.dart';
 import '../services/auth_service.dart';
 import '../services/api_service.dart';
 import '../services/reminder_engine.dart';
+import '../services/sync_service.dart';
 import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
 import '../widgets/smooth_route.dart';
@@ -44,12 +45,23 @@ class _HomeScreenState extends State<HomeScreen> {
   void initState() {
     super.initState();
     _loadUserName();
+    _pullTimelinesOnOpen();
     _refreshReminders();
   }
 
   Future<void> _loadUserName() async {
     final name = await AuthService.getUserName();
     setState(() => _userName = name ?? "");
+  }
+
+  /// Downloads any timelines that exist on the backend but not on this
+  /// device yet — created on another device, or from before a reinstall.
+  /// Runs quietly on every Home screen open; the Timeline list re-renders
+  /// automatically via Hive's box.listenable() the moment anything new
+  /// gets written, so there's no loading state to manage here.
+  Future<void> _pullTimelinesOnOpen() async {
+    final box = Hive.box<TimelineModel>("timelines");
+    await SyncService.pullRemoteTimelines(box: box);
   }
 
   Future<void> _refreshReminders() async {

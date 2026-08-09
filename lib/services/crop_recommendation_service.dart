@@ -116,6 +116,30 @@ class CropRecommendationService {
     CropOption(name: "Cashew", nameSi: "කජු", category: CropCategory.plantation, growthDurationDays: 1095, suitableSoilTypes: ["sandy", "loamy"], suitableClimateZones: ["dry", "intermediate"], wikiImageTitle: "Cashew", bestPlantingMonths: [4, 5, 10, 11]),
   ];
 
+  /// The 13 fixed cultivation stages every generated timeline is built
+  /// from, in order. Hoisted to a class-level constant (rather than a
+  /// list built fresh inside generateMilestoneTimeline every time) so it
+  /// can also be used by bilingualForStageTitle() below — the single
+  /// source of truth for each stage's English/Sinhala text, used both
+  /// when generating a new timeline and when reconstructing Sinhala text
+  /// for a timeline pulled down from the backend (which only stores the
+  /// English title/description — see SyncService.pullRemoteTimelines).
+  static const List<Map<String, dynamic>> _stageTemplates = [
+    {"offset": 0.0, "title": "Land Preparation", "titleSi": "ඉඩම සකස් කිරීම", "description": "Plough and level the field. Clear weeds and debris.", "descriptionSi": "කුඹුර සී කර සමතලා කරන්න. වල් පැළෑටි හා අපද්‍රව්‍ය ඉවත් කරන්න."},
+    {"offset": 0.02, "title": "Soil Testing & Fertilizer Base", "titleSi": "පස පරීක්ෂාව සහ පදනම් පොහොර", "description": "Apply base fertilizer / compost as per soil test.", "descriptionSi": "පස පරීක්ෂණයට අනුව පදනම් පොහොර / කොම්පෝස්ට් යොදන්න."},
+    {"offset": 0.05, "title": "Sowing / Planting", "titleSi": "බීජ වැපිරීම / සිටුවීම", "description": "Plant seeds or seedlings for the crop.", "descriptionSi": "බෝගය සඳහා බීජ හෝ පැළ සිටුවන්න."},
+    {"offset": 0.15, "title": "First Irrigation Check", "titleSi": "පළමු වාරි පරීක්ෂාව", "description": "Ensure adequate soil moisture; irrigate if dry.", "descriptionSi": "පසෙහි ප්‍රමාණවත් තෙතමනය තිබේදැයි පරීක්ෂා කරන්න; වියළි නම් වතුර දෙන්න."},
+    {"offset": 0.25, "title": "First Weeding", "titleSi": "පළමු වල් නෙළීම", "description": "Remove weeds competing for nutrients.", "descriptionSi": "පෝෂක සඳහා තරඟ කරන වල් පැළෑටි ඉවත් කරන්න."},
+    {"offset": 0.35, "title": "First Fertilizer Top-up", "titleSi": "පළමු පොහොර යෙදීම", "description": "Apply top-dressing fertilizer.", "descriptionSi": "වර්ධන පොහොර යොදන්න."},
+    {"offset": 0.45, "title": "Pest & Disease Inspection", "titleSi": "පළිබෝධ හා රෝග පරීක්ෂාව", "description": "Scan leaves for early signs of disease. Use the Disease Scanner if spots appear.", "descriptionSi": "රෝග ලක්ෂණ සඳහා කොළ පරීක්ෂා කරන්න. පැල්ලම් පෙනේ නම් රෝග පරීක්ෂකය භාවිත කරන්න."},
+    {"offset": 0.55, "title": "Second Weeding", "titleSi": "දෙවන වල් නෙළීම", "description": "Clear regrowth of weeds.", "descriptionSi": "යළි වැඩුණු වල් පැළෑටි ඉවත් කරන්න."},
+    {"offset": 0.65, "title": "Second Fertilizer Top-up", "titleSi": "දෙවන පොහොර යෙදීම", "description": "Apply second round of fertilizer for flowering/fruiting stage.", "descriptionSi": "මල් හා ගෙඩි අවධිය සඳහා දෙවන පොහොර වටය යොදන්න."},
+    {"offset": 0.75, "title": "Flowering / Fruit Set Monitoring", "titleSi": "මල් හා ගෙඩි ගැසීම නිරීක්ෂණය", "description": "Monitor flowering and early fruit development.", "descriptionSi": "මල් හැදීම හා මුල් අවධියේ ගෙඩි වර්ධනය නිරීක්ෂණය කරන්න."},
+    {"offset": 0.88, "title": "Pre-Harvest Pest Check", "titleSi": "අස්වනු නෙළීමට පෙර පළිබෝධ පරීක්ෂාව", "description": "Final pest and disease inspection before harvest.", "descriptionSi": "අස්වනු නෙළීමට පෙර අවසාන පළිබෝධ හා රෝග පරීක්ෂාව."},
+    {"offset": 0.97, "title": "Harvest Readiness Check", "titleSi": "අස්වනු සූදානම් බව පරීක්ෂාව", "description": "Confirm maturity indicators before harvesting.", "descriptionSi": "නෙළීමට පෙර පරිණත බව තහවුරු කරන්න."},
+    {"offset": 1.0, "title": "Harvest", "titleSi": "අස්වනු නෙළීම", "description": "Harvest the crop and prepare for market listing.", "descriptionSi": "බෝගය නෙළා වෙළඳපොළට සකස් කරන්න."},
+  ];
+
   /// Filters by soil type AND climate zone together. If nothing matches
   /// both, falls back to soil-only matches so the farmer never sees an
   /// empty screen; falls back to the full catalogue as a last resort.
@@ -168,29 +192,37 @@ class CropRecommendationService {
     return matches.isNotEmpty ? matches : catalogue;
   }
 
+  /// Given a stage's English title (exactly as stored in
+  /// MilestoneModel.title / the backend's milestone.title), returns its
+  /// Sinhala title + description — or null if it doesn't match any known
+  /// stage (e.g. a milestone from some future/renamed stage template).
+  ///
+  /// This exists specifically to backfill Sinhala text for timelines
+  /// pulled down from the backend via SyncService.pullRemoteTimelines:
+  /// the server's CultivationTimeline model only stores English
+  /// title/description (see agrilink-backend/models/CultivationTimeline.js),
+  /// so a timeline downloaded to a second device would otherwise show
+  /// English-only milestones even for a farmer using the Sinhala UI.
+  static Map<String, String>? bilingualForStageTitle(String englishTitle) {
+    for (final stage in _stageTemplates) {
+      if (stage["title"] == englishTitle) {
+        return {
+          "titleSi": stage["titleSi"] as String,
+          "descriptionSi": stage["descriptionSi"] as String,
+        };
+      }
+    }
+    return null;
+  }
+
   /// Generates a day-by-day interactive milestone checklist for the chosen
   /// crop, evenly spaced across its growth cycle with standard farming
   /// activity stages. This is the "dynamic timeline" the farmer will tick
   /// off day by day, synced with weather alerts when online.
   static List<MilestoneModel> generateMilestoneTimeline(CropOption crop) {
     final duration = crop.growthDurationDays;
-    final stages = <Map<String, dynamic>>[
-      {"offset": 0.0, "title": "Land Preparation", "titleSi": "ඉඩම සකස් කිරීම", "description": "Plough and level the field. Clear weeds and debris.", "descriptionSi": "කුඹුර සී කර සමතලා කරන්න. වල් පැළෑටි හා අපද්‍රව්‍ය ඉවත් කරන්න."},
-      {"offset": 0.02, "title": "Soil Testing & Fertilizer Base", "titleSi": "පස පරීක්ෂාව සහ පදනම් පොහොර", "description": "Apply base fertilizer / compost as per soil test.", "descriptionSi": "පස පරීක්ෂණයට අනුව පදනම් පොහොර / කොම්පෝස්ට් යොදන්න."},
-      {"offset": 0.05, "title": "Sowing / Planting", "titleSi": "බීජ වැපිරීම / සිටුවීම", "description": "Plant seeds or seedlings for the crop.", "descriptionSi": "බෝගය සඳහා බීජ හෝ පැළ සිටුවන්න."},
-      {"offset": 0.15, "title": "First Irrigation Check", "titleSi": "පළමු වාරි පරීක්ෂාව", "description": "Ensure adequate soil moisture; irrigate if dry.", "descriptionSi": "පසෙහි ප්‍රමාණවත් තෙතමනය තිබේදැයි පරීක්ෂා කරන්න; වියළි නම් වතුර දෙන්න."},
-      {"offset": 0.25, "title": "First Weeding", "titleSi": "පළමු වල් නෙළීම", "description": "Remove weeds competing for nutrients.", "descriptionSi": "පෝෂක සඳහා තරඟ කරන වල් පැළෑටි ඉවත් කරන්න."},
-      {"offset": 0.35, "title": "First Fertilizer Top-up", "titleSi": "පළමු පොහොර යෙදීම", "description": "Apply top-dressing fertilizer.", "descriptionSi": "වර්ධන පොහොර යොදන්න."},
-      {"offset": 0.45, "title": "Pest & Disease Inspection", "titleSi": "පළිබෝධ හා රෝග පරීක්ෂාව", "description": "Scan leaves for early signs of disease. Use the Disease Scanner if spots appear.", "descriptionSi": "රෝග ලක්ෂණ සඳහා කොළ පරීක්ෂා කරන්න. පැල්ලම් පෙනේ නම් රෝග පරීක්ෂකය භාවිත කරන්න."},
-      {"offset": 0.55, "title": "Second Weeding", "titleSi": "දෙවන වල් නෙළීම", "description": "Clear regrowth of weeds.", "descriptionSi": "යළි වැඩුණු වල් පැළෑටි ඉවත් කරන්න."},
-      {"offset": 0.65, "title": "Second Fertilizer Top-up", "titleSi": "දෙවන පොහොර යෙදීම", "description": "Apply second round of fertilizer for flowering/fruiting stage.", "descriptionSi": "මල් හා ගෙඩි අවධිය සඳහා දෙවන පොහොර වටය යොදන්න."},
-      {"offset": 0.75, "title": "Flowering / Fruit Set Monitoring", "titleSi": "මල් හා ගෙඩි ගැසීම නිරීක්ෂණය", "description": "Monitor flowering and early fruit development.", "descriptionSi": "මල් හැදීම හා මුල් අවධියේ ගෙඩි වර්ධනය නිරීක්ෂණය කරන්න."},
-      {"offset": 0.88, "title": "Pre-Harvest Pest Check", "titleSi": "අස්වනු නෙළීමට පෙර පළිබෝධ පරීක්ෂාව", "description": "Final pest and disease inspection before harvest.", "descriptionSi": "අස්වනු නෙළීමට පෙර අවසාන පළිබෝධ හා රෝග පරීක්ෂාව."},
-      {"offset": 0.97, "title": "Harvest Readiness Check", "titleSi": "අස්වනු සූදානම් බව පරීක්ෂාව", "description": "Confirm maturity indicators before harvesting.", "descriptionSi": "නෙළීමට පෙර පරිණත බව තහවුරු කරන්න."},
-      {"offset": 1.0, "title": "Harvest", "titleSi": "අස්වනු නෙළීම", "description": "Harvest the crop and prepare for market listing.", "descriptionSi": "බෝගය නෙළා වෙළඳපොළට සකස් කරන්න."},
-    ];
 
-    return stages.map((stage) {
+    return _stageTemplates.map((stage) {
       final day = (duration * (stage["offset"] as double)).round();
       return MilestoneModel(
         day: day,

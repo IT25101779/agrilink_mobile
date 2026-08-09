@@ -300,6 +300,18 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  /// GET /api/timelines/mine?farmerId=X
+  /// Fetches every CultivationTimeline the backend has for this farmer —
+  /// used by SyncService.pullRemoteTimelines() to bring timelines created
+  /// on OTHER devices (or before a reinstall) down into local storage.
+  /// Without this, "My Timelines" only ever shows what was created on
+  /// THIS device — see the note at the top of sync_service.dart.
+  static Future<Map<String, dynamic>> getMyTimelines(String farmerId, {String? status}) async {
+    final statusParam = status != null ? "&status=$status" : "";
+    final response = await AppHttp.get(Uri.parse("$baseUrl/timelines/mine?farmerId=$farmerId$statusParam"));
+    return _handleResponse(response);
+  }
+
   static Map<String, dynamic> _handleResponse(http.Response response) {
     try {
       final decoded = jsonDecode(response.body) as Map<String, dynamic>;

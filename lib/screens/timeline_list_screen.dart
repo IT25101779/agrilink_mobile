@@ -25,13 +25,27 @@ class _TimelineListScreenState extends State<TimelineListScreen> {
   Future<void> _manualSync() async {
     setState(() => _isSyncing = true);
     final box = Hive.box<TimelineModel>("timelines");
-    final syncedCount = await SyncService.syncPendingTimelines(box);
+    // Push this device's local edits up, then pull down anything that
+    // exists on the server but not here yet (e.g. created on another
+    // device). Doing both directions is what "Sync Now" should mean to
+    // a farmer, even though the button used to only push.
+    final result = await SyncService.fullSync(box);
+    final pushed = result["pushed"] ?? 0;
+    final pulled = result["pulled"] ?? 0;
     setState(() => _isSyncing = false);
-    if (mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(syncedCount > 0 ? "Synced $syncedCount timeline(s)." : "No internet, or nothing to sync yet.")),
-      );
+
+    if (!mounted) return;
+
+    String message;
+    if (pushed == 0 && pulled == 0) {
+      message = "No internet, or nothing to sync yet.";
+    } else {
+      final parts = <String>[];
+      if (pushed > 0) parts.add("uploaded $pushed");
+      if (pulled > 0) parts.add("downloaded $pulled");
+      message = "Synced — ${parts.join(', ')} timeline(s).";
     }
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
   }
 
   @override
@@ -82,7 +96,9 @@ class _TimelineListScreenState extends State<TimelineListScreen> {
 
               final timelines = box.values.toList().reversed.toList();
 
-              return ListView.builder(
+              return RefreshIndicator(
+                onRefresh: _manualSync,
+                child: ListView.builder(
                 padding: const EdgeInsets.fromLTRB(16, 16, 16, 100),
                 itemCount: timelines.length,
                 itemBuilder: (context, index) {
@@ -173,6 +189,7 @@ class _TimelineListScreenState extends State<TimelineListScreen> {
                     ),
                   );
                 },
+                ),
               );
             },
           ),
