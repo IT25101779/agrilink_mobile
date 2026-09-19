@@ -58,6 +58,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
         return {"icon": Icons.bug_report_rounded, "color": AppColors.danger, "bg": AppColors.dangerLight};
       case "harvest_ready":
         return {"icon": Icons.agriculture_rounded, "color": AppColors.gold, "bg": AppColors.goldLight};
+      case "price_alert":
+        return {"icon": Icons.trending_up_rounded, "color": AppColors.gold, "bg": AppColors.goldLight};
       case "milestone_due":
       default:
         return {"icon": Icons.event_busy_rounded, "color": AppColors.forest, "bg": AppColors.forestLight};
@@ -139,6 +141,11 @@ class _RemindersScreenState extends State<RemindersScreen> {
                                             page: DiseaseScannerScreen(
                                               prefilledCropType: reminder["cropType"],
                                               reminderId: reminder["_id"],
+                                              // Pushed as its own route, not a Home
+                                              // tab — needs its own AppBar/back
+                                              // button. This was the missing-
+                                              // back-navigation bug.
+                                              embedded: false,
                                             ),
                                           ),
                                         ).then((_) => _loadReminders()),

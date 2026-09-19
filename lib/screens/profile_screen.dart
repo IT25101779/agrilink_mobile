@@ -10,6 +10,9 @@ import '../widgets/credit_score_gauge.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/shimmer_loading.dart';
 import 'login_screen.dart';
+import 'farm_passport_screen.dart';
+import '../localization/tr.dart';
+import '../widgets/smooth_route.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -138,6 +141,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         ],
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    FadeSlideIn(
+                      delayMs: 190,
+                      child: _passportCard(),
+                    ),
                     const SizedBox(height: 28),
                     FadeSlideIn(
                       delayMs: 220,
@@ -192,6 +200,50 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
         );
       },
+    );
+  }
+
+  /// Entry point to the Farm Passport (shareable track record + QR code).
+  Widget _passportCard() {
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(16),
+        onTap: () => Navigator.push(context, SmoothRoute(page: const FarmPassportScreen())),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            gradient: const LinearGradient(colors: [AppColors.forestDark, AppColors.forest], begin: Alignment.topLeft, end: Alignment.bottomRight),
+            borderRadius: BorderRadius.circular(16),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 44,
+                height: 44,
+                decoration: BoxDecoration(color: Colors.white.withOpacity(0.16), borderRadius: BorderRadius.circular(12)),
+                child: const Icon(Icons.verified_user_rounded, color: Colors.white),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(tr("Farm Passport", "ගොවි පාස්පෝට්"), style: const TextStyle(color: Colors.white, fontSize: 15.5, fontWeight: FontWeight.w800)),
+                    const SizedBox(height: 2),
+                    Text(
+                      tr("Share your track record with lenders and investors", "ණය දෙන්නන් සහ ආයෝජකයන් සමඟ ඔබේ වාර්තාව බෙදාගන්න"),
+                      style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(Icons.chevron_right_rounded, color: Colors.white),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

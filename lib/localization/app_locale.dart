@@ -103,6 +103,8 @@ class AppLocale extends ChangeNotifier {
       "si": "බීජ හෝ ද්‍රව්‍ය සඳහා අරමුදල් අවශ්‍යද? නාගරික ආයෝජකයන්ගෙන් අනුග්‍රහය ලබාගන්න.",
     },
     "requestFunding": {"en": "Request Funding", "si": "අරමුදල් ඉල්ලන්න"},
+    "repayInvestors": {"en": "Repay Investors", "si": "ආයෝජකයින්ට ආපසු ගෙවන්න"},
+    "repaySuccess": {"en": "Campaign repaid! Your credit score has increased.", "si": "අරමුදල ආපසු ගෙවන ලදී! ඔබේ ණය ලකුණු වැඩි විය."},
 
     "scanCropForDisease": {"en": "Scan your crop for disease", "si": "රෝග සඳහා ඔබේ බෝගය පරීක්ෂා කරන්න"},
     "scanCropSubtitle": {
@@ -113,6 +115,11 @@ class AppLocale extends ChangeNotifier {
     "camera": {"en": "Camera", "si": "කැමරාව"},
     "gallery": {"en": "Gallery", "si": "ගැලරිය"},
     "diagnose": {"en": "Diagnose", "si": "රෝග විනිශ්චය කරන්න"},
+    "healthyCrop": {"en": "No disease detected. Your crop looks healthy!", "si": "රෝගයක් හඳුනාගත නොහැක. ඔබේ බෝගය සෞඛ්‍ය සම්පන්නයි!"},
+    "severityLabel": {"en": "Severity", "si": "බරපතලකම"},
+    "recommendedTreatmentLabel": {"en": "Recommended treatment", "si": "නිර්දේශිත ප්‍රතිකාරය"},
+    "regionalOutbreakAlertLabel": {"en": "Regional Outbreak Alert", "si": "ප්‍රාදේශීය රෝග පැතිරීමේ අනතුරු ඇඟවීම"},
+    "readAloud": {"en": "Read aloud", "si": "හඬින් කියවන්න"},
 
     "agriAssistant": {"en": "Agri Assistant", "si": "කෘෂි සහායක"},
     "chatPlaceholder": {
@@ -134,6 +141,36 @@ class AppLocale extends ChangeNotifier {
     "listOnMarketplace": {"en": "List on Marketplace", "si": "වෙළඳපොළේ ලැයිස්තුගත කරන්න"},
     "myListings": {"en": "My listings", "si": "මගේ ලැයිස්තු"},
     "noListingsYet": {"en": "No listings yet.", "si": "තවම ලැයිස්තු නැත."},
+    "editListing": {"en": "Edit", "si": "සංස්කරණය"},
+    "saveChanges": {"en": "Save Changes", "si": "වෙනස්කම් සුරකින්න"},
+    "markAsSold": {"en": "Mark as Sold", "si": "විකුණන ලද ලෙස සලකුණු කරන්න"},
+    "markAsSoldConfirm": {"en": "Confirm the buyer has paid and received this order?", "si": "ගැනුම්කරු මෙම ඇණවුම සඳහා ගෙවා ලැබී ඇති බව තහවුරු කරන්නද?"},
+    "listingUpdated": {"en": "Listing updated.", "si": "ලැයිස්තුව යාවත්කාලීන කරන ලදී."},
+    "saleCompleted": {"en": "Sale marked as complete.", "si": "විකිණීම සම්පූර්ණ කළ ලෙස සලකුණු කරන ලදී."},
+
+    // ---- Ads ----
+    "sponsored": {"en": "Sponsored", "si": "අනුග්‍රහය"},
+
+    // ---- Community Marketplace (rentals & seeds) ----
+    "communityMarketplace": {"en": "Rentals & Seeds", "si": "කුලියට හා බීජ"},
+    "myRentalsAndSeeds": {"en": "My Rentals & Seeds", "si": "මගේ කුලී භාණ්ඩ හා බීජ"},
+    "postAnItem": {"en": "Post an Item", "si": "අයිතමයක් පළ කරන්න"},
+    "equipmentRental": {"en": "Equipment Rental", "si": "යන්ත්‍ර කුලියට"},
+    "seedsForSale": {"en": "Seeds for Sale", "si": "විකිණීමට බීජ"},
+    "otherItem": {"en": "Other", "si": "වෙනත්"},
+    "itemTitle": {"en": "Title (e.g. Two-wheel tractor for rent)", "si": "මාතෘකාව (උදා: කුලියට දුම්රියක්)"},
+    "itemDescription": {"en": "Description", "si": "විස්තරය"},
+    "priceAmount": {"en": "Price", "si": "මිල"},
+    "priceUnit": {"en": "Unit (e.g. per day, per kg, fixed)", "si": "ඒකකය (උදා: දිනකට, kg කට, ස්ථිර)"},
+    "contactPhoneLabel": {"en": "Contact phone", "si": "සම්බන්ධ වීමට දුරකථන අංකය"},
+    "postListing": {"en": "Post Listing", "si": "ලැයිස්තුව පළ කරන්න"},
+    "noCommunityListingsFound": {"en": "No rentals or seeds posted nearby yet.", "si": "ආසන්නයේ කුලී භාණ්ඩ හෝ බීජ තවම පළ කර නැත."},
+    "callToInquire": {"en": "Call", "si": "අමතන්න"},
+    "deactivate": {"en": "Deactivate", "si": "අක්‍රිය කරන්න"},
+    "activate": {"en": "Activate", "si": "සක්‍රිය කරන්න"},
+    "deleteListing": {"en": "Delete", "si": "මකන්න"},
+    "active": {"en": "Active", "si": "සක්‍රියයි"},
+    "inactive": {"en": "Inactive", "si": "අක්‍රියයි"},
 
     // ---- Logistics ----
     "destinationHub": {"en": "Destination hub", "si": "ගමනාන්ත මධ්‍යස්ථානය"},
@@ -170,6 +207,10 @@ class AppLocale extends ChangeNotifier {
     "verified": {"en": "Verified", "si": "සත්‍යාපිත"},
     "dailyRate": {"en": "Daily rate", "si": "දෛනික ගාස්තුව"},
     "noSuppliersFound": {"en": "No suppliers found nearby yet.", "si": "ආසන්නයේ සැපයුම්කරුවන් හමු නොවීය."},
+    "viewOnMap": {"en": "View on Map", "si": "සිතියමේ බලන්න"},
+    "listView": {"en": "List", "si": "ලැයිස්තුව"},
+    "mapView": {"en": "Map", "si": "සිතියම"},
+    "getDirections": {"en": "Directions", "si": "දිශාව"},
 
     // ---- Seasonal Calendar ----
     "seasonalCalendar": {"en": "Seasonal Planting Calendar", "si": "සෘතුමය වගා දින දර්ශනය"},

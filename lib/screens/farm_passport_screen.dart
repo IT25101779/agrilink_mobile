@@ -1,0 +1,319 @@
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
+import '../localization/app_locale.dart';
+import '../localization/tr.dart';
+import '../services/insights_api.dart';
+import '../theme/app_theme.dart';
+import '../widgets/credit_score_gauge.dart';
+import '../widgets/fade_slide_in.dart';
+import '../widgets/shimmer_loading.dart';
+import '../widgets/ui_kit.dart';
+
+/// FARM PASSPORT — a one-page track record the farmer can show a lender or
+/// investor, with a QR code that opens the same page on any phone (no app or
+/// login needed). Built only from what AgriLink has recorded.
+class FarmPassportScreen extends StatefulWidget {
+  const FarmPassportScreen({super.key});
+
+  @override
+  State<FarmPassportScreen> createState() => _FarmPassportScreenState();
+}
+
+class _FarmPassportScreenState extends State<FarmPassportScreen> {
+  Map<String, dynamic>? _passport;
+  String _shareUrl = "";
+  String _qrUrl = "";
+  bool _loading = true;
+  String? _error;
+
+  @override
+  void initState() {
+    super.initState();
+    _load();
+  }
+
+  Future<void> _load() async {
+    setState(() {
+      _loading = true;
+      _error = null;
+    });
+    final result = await InsightsApi.getMyPassport();
+    if (!mounted) return;
+    if (result["success"] == true && result["data"] is Map) {
+      final data = Map<String, dynamic>.from(result["data"] as Map);
+      setState(() {
+        _passport = Map<String, dynamic>.from(data["passport"] as Map);
+        _shareUrl = "${data["shareUrl"]}";
+        _qrUrl = "${data["qrUrl"]}";
+        _loading = false;
+      });
+    } else {
+      setState(() {
+        _loading = false;
+        _error = result["message"]?.toString() ?? tr("Could not load your passport.", "ඔබේ පාස්පෝට් එක පූරණය කළ නොහැකි විය.");
+      });
+    }
+  }
+
+  void _toast(String message) {
+    if (!mounted) return;
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(message)));
+  }
+
+  Future<void> _copyLink() async {
+    await Clipboard.setData(ClipboardData(text: _shareUrl));
+    _toast(tr("Link copied. Paste it into WhatsApp or email.", "සබැඳිය පිටපත් කළා. WhatsApp හෝ ඊමේල් වෙත අලවන්න."));
+  }
+
+  Future<void> _openPage() async {
+    final uri = Uri.parse(_shareUrl);
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  Future<void> _rotate() async {
+    final ok = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text(tr("Replace your link?", "ඔබේ සබැඳිය වෙනස් කරන්නද?")),
+        content: Text(tr(
+          "A new link and QR code will be created. Anything you shared before will stop working straight away.",
+          "නව සබැඳියක් සහ QR කේතයක් සාදනු ලැබේ. ඔබ කලින් බෙදාගත් සියල්ල වහාම ක්‍රියා නොකරනු ඇත.",
+        )),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Replace", "වෙනස් කරන්න"))),
+        ],
+      ),
+    );
+    if (ok != true) return;
+    final result = await InsightsApi.rotatePassportLink();
+    _toast(result["message"]?.toString() ?? tr("Done.", "සම්පූර්ණයි."));
+    _load();
+  }
+
+  Widget _tile(String value, String label, Color accent) {
+    return Container(
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(color: tintOf(context, accent), borderRadius: BorderRadius.circular(14)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          FittedBox(
+            fit: BoxFit.scaleDown,
+            alignment: Alignment.centerLeft,
+            child: Text(value, style: TextStyle(fontSize: 19, fontWeight: FontWeight.w800, color: accent)),
+          ),
+          const SizedBox(height: 3),
+          Text(label, style: TextStyle(fontSize: 11.5, color: mutedOf(context))),
+        ],
+      ),
+    );
+  }
+
+  Widget _grid(List<Widget> tiles) {
+    final rows = <Widget>[];
+    for (int i = 0; i < tiles.length; i += 2) {
+      rows.add(Padding(
+        padding: const EdgeInsets.only(bottom: 10),
+        child: Row(
+          children: [
+            Expanded(child: tiles[i]),
+            const SizedBox(width: 10),
+            Expanded(child: i + 1 < tiles.length ? tiles[i + 1] : const SizedBox.shrink()),
+          ],
+        ),
+      ));
+    }
+    return Column(children: rows);
+  }
+
+  Widget _body(Map<String, dynamic> passport) {
+    final t = AppLocale.instance.t;
+    final stats = Map<String, dynamic>.from(passport["stats"] as Map);
+    final score = (passport["creditScore"] as num?)?.toInt() ?? 500;
+    final scoreLabel = score >= 800
+        ? t("creditScoreExcellent")
+        : score >= 600
+            ? t("creditScoreGood")
+            : t("creditScoreBuilding");
+    final crops = (stats["cropsSold"] as List? ?? []).map((c) => "$c").toList();
+
+    return ListView(
+      padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
+      children: [
+        FadeSlideIn(
+          child: Container(
+            padding: const EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(colors: [AppColors.forestDark, AppColors.forest], begin: Alignment.topLeft, end: Alignment.bottomRight),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text("AGRILINK · ${tr("FARM PASSPORT", "ගොවි පාස්පෝට්").toUpperCase()}", style: const TextStyle(color: Colors.white70, fontSize: 11, letterSpacing: 1.2, fontWeight: FontWeight.w700)),
+                const SizedBox(height: 8),
+                Text("${passport["name"]}", style: const TextStyle(color: Colors.white, fontSize: 21, fontWeight: FontWeight.w800)),
+                const SizedBox(height: 2),
+                Text("${passport["district"]}".isEmpty ? "Sri Lanka" : "${passport["district"]}", style: const TextStyle(color: Colors.white70, fontSize: 13)),
+                const SizedBox(height: 12),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                  decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
+                  child: Text("${passport["passportId"]}", style: const TextStyle(color: Colors.white, fontSize: 12, fontFamily: "monospace")),
+                ),
+              ],
+            ),
+          ),
+        ),
+        const SizedBox(height: 18),
+        FadeSlideIn(
+          delayMs: 80,
+          child: SoftCard(
+            child: Column(
+              children: [
+                CreditScoreGauge(score: score, label: scoreLabel),
+                const SizedBox(height: 6),
+                Text(t("creditScore"), style: TextStyle(fontSize: 12.5, color: mutedOf(context), fontWeight: FontWeight.w600)),
+              ],
+            ),
+          ),
+        ),
+        FadeSlideIn(
+          delayMs: 140,
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              SectionHeader(title: tr("Farming record", "වගා වාර්තාව")),
+              _grid([
+                _tile("${stats["completedTimelines"]}", tr("Crop cycles completed", "සම්පූර්ණ කළ වගා වට"), AppColors.forest),
+                _tile("${stats["activeTimelines"]}", tr("Growing now", "දැන් වගා කරන"), AppColors.forest),
+              ]),
+              SectionHeader(title: tr("Sales on AgriLink", "AgriLink හි විකුණුම්")),
+              _grid([
+                _tile("${stats["salesCompleted"]}", tr("Completed sales", "සම්පූර්ණ විකුණුම්"), AppColors.forest),
+                _tile("${groupedNumber(numOf(stats["kgSold"]))} kg", tr("Produce sold", "විකුණූ අස්වැන්න"), AppColors.forest),
+                _tile(lkr(numOf(stats["salesValueLkr"])), tr("Total sales value", "මුළු විකුණුම් වටිනාකම"), AppColors.gold),
+                _tile("${stats["buyerRejectionRatePercent"]}%", tr("Rejected by buyers", "ගැනුම්කරුවන් ප්‍රතික්ෂේප කළ"), AppColors.indigo),
+              ]),
+              if (crops.isNotEmpty)
+                Padding(
+                  padding: const EdgeInsets.only(bottom: 12),
+                  child: Text("${tr("Crops sold", "විකුණූ බෝග")}: ${crops.join(", ")}", style: TextStyle(fontSize: 12.5, color: mutedOf(context), height: 1.4)),
+                ),
+              SectionHeader(title: tr("Funding & repayment", "අරමුදල් සහ ආපසු ගෙවීම")),
+              _grid([
+                _tile("${stats["fundingCampaignsFunded"]}", tr("Campaigns funded", "අරමුදල් ලැබූ ව්‍යාපෘති"), AppColors.forest),
+                _tile(lkr(numOf(stats["fundingRaisedLkr"])), tr("Raised from investors", "ආයෝජකයන්ගෙන් ලැබුණු"), AppColors.gold),
+                _tile("${stats["fundingRepaidCampaigns"]}", tr("Campaigns repaid", "ආපසු ගෙවූ ව්‍යාපෘති"), AppColors.forest),
+                _tile(lkr(numOf(stats["fundingRepaidLkr"])), tr("Repaid to investors", "ආයෝජකයන්ට ගෙවූ"), AppColors.gold),
+              ]),
+              SectionHeader(title: tr("Community", "ප්‍රජාව")),
+              _grid([
+                _tile("${stats["groupSalesCompleted"]}", tr("Group sales", "කණ්ඩායම් විකුණුම්"), AppColors.indigo),
+                _tile("${groupedNumber(numOf(stats["groupKgContributed"]))} kg", tr("Contributed to lots", "ලොට් වලට දායක කළ"), AppColors.indigo),
+              ]),
+            ],
+          ),
+        ),
+        const SizedBox(height: 6),
+        SectionHeader(
+          title: tr("Share it", "බෙදාගන්න"),
+          subtitle: tr("Anyone can scan this QR code to open your passport page. No app or login needed.", "ඕනෑම කෙනෙකුට මෙම QR කේතය ස්කෑන් කර ඔබේ පාස්පෝට් පිටුව විවෘත කළ හැක. යෙදුමක් හෝ ලොග් වීමක් අවශ්‍ය නැත."),
+        ),
+        SoftCard(
+          child: Column(
+            children: [
+              Container(
+                width: 190,
+                height: 190,
+                padding: const EdgeInsets.all(8),
+                decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(14), border: Border.all(color: borderOf(context))),
+                child: Image.network(
+                  _qrUrl,
+                  fit: BoxFit.contain,
+                  loadingBuilder: (context, child, progress) => progress == null ? child : const Center(child: CircularProgressIndicator(strokeWidth: 2)),
+                  errorBuilder: (context, error, stack) => Center(
+                    child: Text(tr("QR code could not load. Check your connection.", "QR කේතය පූරණය නොවීය. සම්බන්ධතාව පරීක්ෂා කරන්න."), textAlign: TextAlign.center, style: const TextStyle(fontSize: 12, color: Colors.black54)),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 14),
+              Row(
+                children: [
+                  Expanded(
+                    child: ElevatedButton.icon(
+                      onPressed: _copyLink,
+                      icon: const Icon(Icons.copy_rounded, size: 16),
+                      label: Text(tr("Copy link", "සබැඳිය පිටපත් කරන්න")),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: OutlinedButton.icon(
+                      onPressed: _openPage,
+                      icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                      label: Text(tr("Open page", "පිටුව විවෘත කරන්න")),
+                    ),
+                  ),
+                ],
+              ),
+              TextButton.icon(
+                onPressed: _rotate,
+                icon: const Icon(Icons.autorenew_rounded, size: 16, color: AppColors.danger),
+                label: Text(tr("Replace link (stops old links)", "සබැඳිය වෙනස් කරන්න (පැරණි සබැඳි නවතී)"), style: const TextStyle(color: AppColors.danger, fontSize: 12.5)),
+              ),
+            ],
+          ),
+        ),
+        InfoBanner(
+          icon: Icons.info_outline_rounded,
+          color: AppColors.gold,
+          text: tr(
+            "Sales, funding and repayment are recorded from activity on AgriLink. Crop timelines are entered by you and are not independently checked. This passport supports a loan or investment request but does not replace a lender's own checks.",
+            "විකුණුම්, අරමුදල් සහ ආපසු ගෙවීම් AgriLink ක්‍රියාකාරකම් වලින් සටහන් වේ. වගා කාලසටහන් ඔබ විසින් ඇතුළත් කරන අතර ස්වාධීනව පරීක්ෂා නොකෙරේ. මෙම පාස්පෝට් එක ණය හෝ ආයෝජන ඉල්ලීමකට සහාය වන නමුත් ණය දෙන්නාගේ තමන්ගේම පරීක්ෂාවන් ප්‍රතිස්ථාපනය නොකරයි.",
+          ),
+        ),
+      ],
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: AppLocale.instance,
+      builder: (context, _) {
+        Widget content;
+        if (_loading) {
+          content = ListView(padding: const EdgeInsets.all(16), children: const [ShimmerCard(), ShimmerCard(), ShimmerCard()]);
+        } else if (_error != null || _passport == null) {
+          content = Center(
+            child: Padding(
+              padding: const EdgeInsets.all(28),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  const Icon(Icons.cloud_off_rounded, size: 40, color: AppColors.inkMuted),
+                  const SizedBox(height: 12),
+                  Text(_error ?? "", textAlign: TextAlign.center),
+                  const SizedBox(height: 12),
+                  ElevatedButton(onPressed: _load, child: Text(tr("Try again", "නැවත උත්සාහ කරන්න"))),
+                ],
+              ),
+            ),
+          );
+        } else {
+          content = _body(_passport!);
+        }
+        return Scaffold(
+          appBar: AppBar(title: Text(tr("Farm Passport", "ගොවි පාස්පෝට්"))),
+          body: content,
+        );
+      },
+    );
+  }
+}

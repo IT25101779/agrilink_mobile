@@ -7,38 +7,37 @@ import '../localization/app_locale.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/shimmer_loading.dart';
+import '../widgets/smooth_route.dart';
 import '../models/map_pin_data.dart';
+import 'post_community_listing_screen.dart';
+import 'my_community_listings_screen.dart';
 import 'map_view_screen.dart';
 
 const Map<String, IconData> _typeIcons = {
-  "seed_store": Icons.eco_rounded,
-  "fertilizer_store": Icons.science_rounded,
-  "tool_store": Icons.handyman_rounded,
   "equipment_rental": Icons.agriculture_rounded,
+  "seeds_for_sale": Icons.eco_rounded,
+  "other": Icons.inventory_2_rounded,
 };
 
-class SuppliersScreen extends StatefulWidget {
-  const SuppliersScreen({super.key});
+/// Farmer-to-farmer marketplace for equipment rentals and seeds/inputs for
+/// sale — distinct from the admin-managed Suppliers directory (business
+/// listings) and MarketplaceListing (harvested produce). Any farmer can
+/// post an item here; buyers see it and call the listed phone number
+/// directly, same pattern as the Suppliers screen's Call button.
+class CommunityMarketplaceScreen extends StatefulWidget {
+  const CommunityMarketplaceScreen({super.key});
 
   @override
-  State<SuppliersScreen> createState() => _SuppliersScreenState();
+  State<CommunityMarketplaceScreen> createState() => _CommunityMarketplaceScreenState();
 }
 
-class _SuppliersScreenState extends State<SuppliersScreen> {
+class _CommunityMarketplaceScreenState extends State<CommunityMarketplaceScreen> {
   String? _typeFilter;
-  List<dynamic> _suppliers = [];
+  List<dynamic> _listings = [];
   bool _isLoading = true;
   String? _errorMessage;
   double _latitude = 7.2906;
   double _longitude = 80.6337;
-
-  final Map<String?, String> _filterLabels = {
-    null: "All",
-    "seed_store": "Seeds",
-    "fertilizer_store": "Fertilizer",
-    "tool_store": "Tools",
-    "equipment_rental": "Rentals",
-  };
 
   @override
   void initState() {
@@ -63,22 +62,24 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       }
     } catch (_) {}
 
-    _latitude = position?.latitude ?? 7.2906;
-    _longitude = position?.longitude ?? 80.6337;
+    final latitude = position?.latitude ?? 7.2906;
+    final longitude = position?.longitude ?? 80.6337;
+    _latitude = latitude;
+    _longitude = longitude;
 
-    final result = await ApiService.getNearbySuppliers(
-      latitude: _latitude,
-      longitude: _longitude,
+    final result = await ApiService.getNearbyCommunityListings(
+      latitude: latitude,
+      longitude: longitude,
       radiusKm: 50,
-      type: _typeFilter,
+      listingType: _typeFilter,
     );
 
     setState(() {
       _isLoading = false;
       if (result["success"] == true) {
-        _suppliers = result["data"] as List;
+        _listings = result["data"] as List;
       } else {
-        _errorMessage = result["message"] ?? "Could not load suppliers.";
+        _errorMessage = result["message"] ?? "Could not load listings.";
       }
     });
   }
@@ -90,15 +91,24 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
     }
   }
 
+  Future<void> _openPostScreen() async {
+    final created = await Navigator.push<bool>(
+      context,
+      SmoothRoute(page: const PostCommunityListingScreen()),
+    );
+    if (created == true) _load();
+  }
+
   void _openMap() {
-    final pins = _suppliers.map((s) {
-      final coords = (s["location"]?["coordinates"] as List?) ?? [80.6337, 7.2906];
+    final pins = _listings.map((l) {
+      final coords = (l["location"]?["coordinates"] as List?) ?? [80.6337, 7.2906];
+      final priceInfo = l["priceInfo"] as Map<String, dynamic>?;
       return MapPinData(
-        name: s["businessName"] ?? "",
+        name: l["title"] ?? "",
         latitude: (coords[1] as num).toDouble(),
         longitude: (coords[0] as num).toDouble(),
-        phone: s["contactPhone"] as String?,
-        subtitle: s["address"] as String?,
+        phone: l["contactPhone"] as String?,
+        subtitle: priceInfo != null ? "LKR ${priceInfo["amount"]} ${priceInfo["unit"]}" : null,
       );
     }).toList();
 
@@ -106,7 +116,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       context,
       MaterialPageRoute(
         builder: (_) => MapViewScreen(
-          title: AppLocale.instance.t("nearbySuppliers"),
+          title: AppLocale.instance.t("communityMarketplace"),
           pins: pins,
           initialLatitude: _latitude,
           initialLongitude: _longitude,
@@ -121,16 +131,37 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
       listenable: AppLocale.instance,
       builder: (context, _) {
         final t = AppLocale.instance.t;
+        final filterLabels = <String?, String>{
+          null: "All",
+          "equipment_rental": t("equipmentRental"),
+          "seeds_for_sale": t("seedsForSale"),
+          "other": t("otherItem"),
+        };
+
         return Scaffold(
           appBar: AppBar(
-            title: Text(t("nearbySuppliers")),
+            title: Text(t("communityMarketplace")),
             actions: [
               IconButton(
                 icon: const Icon(Icons.map_outlined),
                 tooltip: t("mapView"),
-                onPressed: _suppliers.isEmpty ? null : _openMap,
+                onPressed: _listings.isEmpty ? null : _openMap,
+              ),
+              IconButton(
+                icon: const Icon(Icons.list_alt_rounded),
+                tooltip: t("myRentalsAndSeeds"),
+                onPressed: () => Navigator.push(
+                  context,
+                  SmoothRoute(page: const MyCommunityListingsScreen()),
+                ).then((_) => _load()),
               ),
             ],
+          ),
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: _openPostScreen,
+            backgroundColor: AppColors.gold,
+            icon: const Icon(Icons.add_rounded),
+            label: Text(t("postAnItem")),
           ),
           body: Column(
             children: [
@@ -139,7 +170,7 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                 child: ListView(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
-                  children: _filterLabels.entries.map((entry) {
+                  children: filterLabels.entries.map((entry) {
                     final isSelected = _typeFilter == entry.key;
                     return Padding(
                       padding: const EdgeInsets.only(right: 8),
@@ -165,17 +196,16 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                       )
                     : _errorMessage != null
                         ? EmptyState(icon: Icons.error_outline_rounded, title: _errorMessage!)
-                        : _suppliers.isEmpty
-                            ? EmptyState(icon: Icons.storefront_outlined, title: t("noSuppliersFound"))
+                        : _listings.isEmpty
+                            ? EmptyState(icon: Icons.storefront_outlined, title: t("noCommunityListingsFound"))
                             : RefreshIndicator(
                                 onRefresh: _load,
                                 child: ListView.builder(
-                                  padding: const EdgeInsets.all(16),
-                                  itemCount: _suppliers.length,
+                                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 90),
+                                  itemCount: _listings.length,
                                   itemBuilder: (context, index) {
-                                    final supplier = _suppliers[index];
-                                    final rentalEquipment = (supplier["rentalEquipment"] as List?) ?? [];
-                                    final items = (supplier["itemsAvailable"] as List?) ?? [];
+                                    final listing = _listings[index];
+                                    final priceInfo = listing["priceInfo"] as Map<String, dynamic>?;
 
                                     return FadeSlideIn(
                                       delayMs: index * 50,
@@ -196,66 +226,39 @@ class _SuppliersScreenState extends State<SuppliersScreen> {
                                                   width: 38,
                                                   height: 38,
                                                   decoration: BoxDecoration(color: AppColors.forestLight, borderRadius: BorderRadius.circular(10)),
-                                                  child: Icon(_typeIcons[supplier["supplierType"]] ?? Icons.storefront, color: AppColors.forest, size: 19),
+                                                  child: Icon(_typeIcons[listing["listingType"]] ?? Icons.inventory_2_rounded, color: AppColors.forest, size: 19),
                                                 ),
                                                 const SizedBox(width: 10),
                                                 Expanded(
                                                   child: Column(
                                                     crossAxisAlignment: CrossAxisAlignment.start,
                                                     children: [
-                                                      Text(supplier["businessName"], style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-                                                      Text(supplier["district"] ?? "", style: const TextStyle(fontSize: 12, color: AppColors.inkMuted)),
+                                                      Text(listing["title"] ?? "", style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
+                                                      Text(
+                                                        "${listing["farmer"]?["fullName"] ?? ""} \u00b7 ${listing["district"] ?? ""}",
+                                                        style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
+                                                      ),
                                                     ],
                                                   ),
                                                 ),
-                                                if (supplier["isVerified"] == true)
-                                                  Container(
-                                                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                                    decoration: BoxDecoration(color: AppColors.forestLight, borderRadius: BorderRadius.circular(20)),
-                                                    child: Row(
-                                                      mainAxisSize: MainAxisSize.min,
-                                                      children: [
-                                                        const Icon(Icons.verified_rounded, size: 12, color: AppColors.forest),
-                                                        const SizedBox(width: 3),
-                                                        Text(t("verified"), style: const TextStyle(fontSize: 10, color: AppColors.forest, fontWeight: FontWeight.w700)),
-                                                      ],
-                                                    ),
-                                                  ),
                                               ],
                                             ),
                                             const SizedBox(height: 10),
-                                            Text(supplier["address"] ?? "", style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
-                                            if (items.isNotEmpty) ...[
+                                            Text(listing["description"] ?? "", style: const TextStyle(fontSize: 12.5, color: AppColors.inkMuted)),
+                                            if (priceInfo != null) ...[
                                               const SizedBox(height: 8),
-                                              Wrap(
-                                                spacing: 6,
-                                                runSpacing: 6,
-                                                children: items
-                                                    .map<Widget>((item) => Chip(
-                                                          label: Text(item, style: const TextStyle(fontSize: 10.5)),
-                                                          visualDensity: VisualDensity.compact,
-                                                          backgroundColor: AppColors.background,
-                                                        ))
-                                                    .toList(),
+                                              Text(
+                                                "LKR ${priceInfo["amount"]} ${priceInfo["unit"]}",
+                                                style: const TextStyle(fontSize: 13.5, fontWeight: FontWeight.w700, color: AppColors.forest),
                                               ),
-                                            ],
-                                            if (rentalEquipment.isNotEmpty) ...[
-                                              const SizedBox(height: 8),
-                                              ...rentalEquipment.map((eq) => Padding(
-                                                    padding: const EdgeInsets.only(bottom: 3),
-                                                    child: Text(
-                                                      "${eq["equipmentName"]} — ${t("dailyRate")}: LKR ${eq["dailyRateLkr"]}",
-                                                      style: const TextStyle(fontSize: 12),
-                                                    ),
-                                                  )),
                                             ],
                                             const SizedBox(height: 10),
                                             SizedBox(
                                               width: double.infinity,
                                               child: OutlinedButton.icon(
-                                                onPressed: () => _call(supplier["contactPhone"]),
+                                                onPressed: () => _call(listing["contactPhone"] ?? ""),
                                                 icon: const Icon(Icons.call_rounded, size: 16),
-                                                label: Text("${t("call")} · ${supplier["contactPhone"]}"),
+                                                label: Text("${t("callToInquire")} \u00b7 ${listing["contactPhone"] ?? ""}"),
                                               ),
                                             ),
                                           ],

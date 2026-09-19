@@ -43,3 +43,10 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# iOS build artifacts (created manually during Codemagic sideload testing —
+# these are build outputs, not source, and shouldn't be version controlled)
+/Payload/
+/extracted/
+*.ipa
+Runner.app.zip

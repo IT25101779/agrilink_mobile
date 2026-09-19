@@ -1,18 +1,25 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
     <!-- Required for ALL network requests (http package, image fetching, etc.) -->
     <uses-permission android:name="android.permission.INTERNET" />
-    <!-- Required for Geolocator (Marketplace/Logistics/Suppliers screens use GPS) -->
+    <!-- Required for Geolocator (Marketplace/Logistics/Suppliers/Community Marketplace screens use GPS) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <!-- Required for voice input (Agri Assistant chat) -->
     <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <!-- Required for local notifications (Reminders) on Android 13+ -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <!-- Required to place phone calls from the Call buttons (Suppliers, Community Marketplace) -->
+    <uses-permission android:name="android.permission.CALL_PHONE" />
 
     <application
         android:label="ගොවි Tech"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
+        <!-- Google Maps SDK API key — used by google_maps_flutter for the
+             Suppliers/Community Marketplace map view. -->
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyChvBqHrWLf19LU9W3KiAg4bFsOvKwdJdU" />
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -50,6 +57,16 @@
         <intent>
             <action android:name="android.intent.action.PROCESS_TEXT"/>
             <data android:mimeType="text/plain"/>
+        </intent>
+        <!-- Required so url_launcher can open tel: (Call buttons) and the
+             external Google Maps app (Get Directions) on Android 11+. -->
+        <intent>
+            <action android:name="android.intent.action.DIAL"/>
+            <data android:scheme="tel"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:scheme="geo"/>
         </intent>
     </queries>
 </manifest>

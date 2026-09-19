@@ -3,6 +3,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../models/timeline_model.dart';
 import 'api_service.dart';
 import 'auth_service.dart';
+import 'insights_api.dart';
 import 'notification_service.dart';
 
 class ReminderEngine {
@@ -31,6 +32,10 @@ class ReminderEngine {
             .toList(),
       );
     }
+
+    // Sell-or-Hold: turn today's advice on the farmer's live listings into
+    // reminders (the server creates at most one per listing, action and day).
+    await InsightsApi.generatePriceAlerts();
 
     final result = await ApiService.getReminders(farmerId, status: "pending");
     if (result["success"] != true) return;

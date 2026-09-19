@@ -43,11 +43,60 @@ class ApiService {
     return result;
   }
 
+  /// PATCH /api/marketplace/listings/:id — farmer edits their own listing
+  /// (quantity, price, harvest date, quality grade, photos) while it's
+  /// still in "listed" status. Previously there was no way to do this at
+  /// all — a farmer who mistyped a price had no fix but to leave it wrong.
+  static Future<Map<String, dynamic>> updateMarketplaceListing({
+    required String listingId,
+    required String farmerId,
+    double? quantityKg,
+    double? pricePerKg,
+    DateTime? harvestDate,
+    String? qualityGrade,
+    List<String>? photos,
+  }) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$baseUrl/marketplace/listings/$listingId"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "farmerId": farmerId,
+        if (quantityKg != null) "quantityKg": quantityKg,
+        if (pricePerKg != null) "pricePerKg": pricePerKg,
+        if (harvestDate != null) "harvestDate": harvestDate.toIso8601String(),
+        if (qualityGrade != null) "qualityGrade": qualityGrade,
+        if (photos != null) "photos": photos,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  /// PATCH /api/marketplace/listings/:id/complete-sale — marks a reserved
+  /// order as actually completed. Needed for AI price prediction to ever
+  /// have real sold-price data to learn from (see backend
+  /// pricePredictionEngine.js) — without this being called, every price
+  /// estimate falls back to a generic asking-price average or flat default.
+  static Future<Map<String, dynamic>> completeSale({
+    required String listingId,
+    required String confirmedByUserId,
+  }) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$baseUrl/marketplace/listings/$listingId/complete-sale"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"confirmedBy": confirmedByUserId}),
+    );
+    return _handleResponse(response);
+  }
+
   static Future<Map<String, dynamic>> getPricePrediction(String cropType) async {
     final response = await AppHttp.get(Uri.parse("$baseUrl/price-predict/$cropType"));
     return _handleResponse(response);
   }
 
+  /// language: pass the farmer's current UI language ("si"/"ta"/"en") so
+  /// the backend translates the disease name, severity, symptoms, and
+  /// treatment steps in the response. The database always stores the
+  /// English original regardless — see backend diseaseController.js.
   static Future<Map<String, dynamic>> scanCropDisease({
     required String farmerId,
     required String cropType,
@@ -55,6 +104,7 @@ class ApiService {
     required double latitude,
     required double longitude,
     String? district,
+    String language = "en",
   }) async {
     final response = await AppHttp.post(
       Uri.parse("$baseUrl/disease/scan"),
@@ -66,6 +116,7 @@ class ApiService {
         "latitude": latitude,
         "longitude": longitude,
         "district": district,
+        "language": language,
       }),
     );
     return _handleResponse(response);
@@ -217,6 +268,19 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  /// PATCH /api/crowdfunding/campaigns/:id/repay — the backend endpoint
+  /// existed already, but nothing in the app ever called it, so a farmer
+  /// had no way to actually trigger the credit-score-boost repayment flow
+  /// your proposal describes. Should only be called once a campaign's
+  /// status is "funded" — see the button added to TimelineDetailScreen.
+  static Future<Map<String, dynamic>> repayCampaign(String campaignId) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$baseUrl/crowdfunding/campaigns/$campaignId/repay"),
+      headers: {"Content-Type": "application/json"},
+    );
+    return _handleResponse(response);
+  }
+
   static Future<Map<String, dynamic>> sendChatMessage({
     required String farmerId,
     required String message,
@@ -300,15 +364,128 @@ class ApiService {
     return _handleResponse(response);
   }
 
-  /// GET /api/timelines/mine?farmerId=X
-  /// Fetches every CultivationTimeline the backend has for this farmer —
-  /// used by SyncService.pullRemoteTimelines() to bring timelines created
-  /// on OTHER devices (or before a reinstall) down into local storage.
-  /// Without this, "My Timelines" only ever shows what was created on
-  /// THIS device — see the note at the top of sync_service.dart.
   static Future<Map<String, dynamic>> getMyTimelines(String farmerId, {String? status}) async {
     final statusParam = status != null ? "&status=$status" : "";
     final response = await AppHttp.get(Uri.parse("$baseUrl/timelines/mine?farmerId=$farmerId$statusParam"));
+    return _handleResponse(response);
+  }
+
+  /// GET /api/ads?activeOnly=true — banner ads for the farmer app.
+  /// Previously the admin Ad Scheduler could create ads, but nothing in
+  /// the farmer app ever fetched or displayed them.
+  static Future<Map<String, dynamic>> getActiveAds({
+    String? cropType,
+    String? timelinePhase,
+    String? district,
+  }) async {
+    final params = <String>["activeOnly=true"];
+    if (cropType != null) params.add("cropType=$cropType");
+    if (timelinePhase != null) params.add("timelinePhase=$timelinePhase");
+    if (district != null) params.add("district=$district");
+    final response = await AppHttp.get(Uri.parse("$baseUrl/ads?${params.join('&')}"));
+    return _handleResponse(response);
+  }
+
+  static Future<void> trackAdImpression(String adId) async {
+    try {
+      await AppHttp.post(Uri.parse("$baseUrl/ads/$adId/impression"));
+    } catch (_) {
+      // Fire-and-forget — a failed impression ping shouldn't affect the UI.
+    }
+  }
+
+  static Future<void> trackAdClick(String adId) async {
+    try {
+      await AppHttp.post(Uri.parse("$baseUrl/ads/$adId/click"));
+    } catch (_) {
+      // Fire-and-forget, same as above.
+    }
+  }
+
+  // ---- Community Marketplace (farmer-posted rentals & seeds) ----
+
+  static Future<Map<String, dynamic>> createCommunityListing({
+    required String farmerId,
+    required String listingType, // "equipment_rental" | "seeds_for_sale" | "other"
+    required String title,
+    required String description,
+    required double priceAmount,
+    required String priceUnit,
+    required double latitude,
+    required double longitude,
+    required String district,
+    String? contactPhone,
+    List<String> photos = const [],
+  }) async {
+    final response = await AppHttp.post(
+      Uri.parse("$baseUrl/community-listings"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "farmer": farmerId,
+        "listingType": listingType,
+        "title": title,
+        "description": description,
+        "priceInfo": {"amount": priceAmount, "unit": priceUnit},
+        "latitude": latitude,
+        "longitude": longitude,
+        "district": district,
+        if (contactPhone != null) "contactPhone": contactPhone,
+        "photos": photos,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<Map<String, dynamic>> getNearbyCommunityListings({
+    required double latitude,
+    required double longitude,
+    double radiusKm = 25,
+    String? listingType,
+  }) async {
+    final typeParam = listingType != null ? "&listingType=$listingType" : "";
+    final response = await AppHttp.get(
+      Uri.parse("$baseUrl/community-listings/nearby?latitude=$latitude&longitude=$longitude&radiusKm=$radiusKm$typeParam"),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<Map<String, dynamic>> getMyCommunityListings(String farmerId) async {
+    final response = await AppHttp.get(Uri.parse("$baseUrl/community-listings/mine?farmerId=$farmerId"));
+    return _handleResponse(response);
+  }
+
+  static Future<Map<String, dynamic>> updateCommunityListing({
+    required String listingId,
+    required String farmerId,
+    String? title,
+    String? description,
+    double? priceAmount,
+    String? priceUnit,
+    bool? isActive,
+    String? contactPhone,
+  }) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$baseUrl/community-listings/$listingId"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "farmerId": farmerId,
+        if (title != null) "title": title,
+        if (description != null) "description": description,
+        if (priceAmount != null && priceUnit != null) "priceInfo": {"amount": priceAmount, "unit": priceUnit},
+        if (isActive != null) "isActive": isActive,
+        if (contactPhone != null) "contactPhone": contactPhone,
+      }),
+    );
+    return _handleResponse(response);
+  }
+
+  static Future<Map<String, dynamic>> deleteCommunityListing({
+    required String listingId,
+    required String farmerId,
+  }) async {
+    final response = await AppHttp.delete(
+      Uri.parse("$baseUrl/community-listings/$listingId?farmerId=$farmerId"),
+    );
     return _handleResponse(response);
   }
 

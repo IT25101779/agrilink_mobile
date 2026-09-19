@@ -24,6 +24,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
   late ConfettiController _confettiController;
   Map<String, dynamic>? _campaign;
   bool _isLoadingCampaign = true;
+  bool _isRepaying = false;
 
   @override
   void initState() {
@@ -129,6 +130,47 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
     }
   }
 
+  /// Triggers the backend's repay endpoint — this existed already, but
+  /// nothing in the app ever called it, so the credit-score-boost
+  /// repayment flow described in the proposal had no way to actually run.
+  /// Only shown once a campaign has reached "funded" status.
+  Future<void> _repayCampaign() async {
+    if (_campaign == null) return;
+
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: const Text("Repay Investors"),
+        content: Text(
+          "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — AgriLink AI doesn't move money directly yet. Your credit score will increase once confirmed.",
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Confirm Repayment")),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    setState(() => _isRepaying = true);
+    final result = await ApiService.repayCampaign(_campaign!["_id"]);
+    setState(() => _isRepaying = false);
+
+    if (!mounted) return;
+
+    if (result["success"] == true) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(AppLocale.instance.t("repaySuccess"))),
+      );
+      _loadCampaign();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(result["message"] ?? "Failed to process repayment.")),
+      );
+    }
+  }
+
   Future<void> _toggleMilestone(TimelineModel timeline, int index) async {
     final milestone = timeline.milestones[index];
     milestone.isCompleted = !milestone.isCompleted;
@@ -226,6 +268,23 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
               "LKR ${raised.toStringAsFixed(0)} raised of LKR ${goal.toStringAsFixed(0)} \u00b7 ${_campaign!["pledges"]?.length ?? 0} investor(s)",
               style: const TextStyle(fontSize: 11.5, color: AppColors.inkMuted),
             ),
+            if (status == "funded") ...[
+              const SizedBox(height: 10),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _isRepaying ? null : _repayCampaign,
+                  icon: _isRepaying
+                      ? const SizedBox(width: 14, height: 14, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
+                      : const Icon(Icons.check_circle_outline_rounded, size: 16),
+                  label: Text(AppLocale.instance.t("repayInvestors"), style: const TextStyle(fontSize: 12.5)),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.forest,
+                    padding: const EdgeInsets.symmetric(vertical: 10),
+                  ),
+                ),
+              ),
+            ],
           ],
         ),
       ),

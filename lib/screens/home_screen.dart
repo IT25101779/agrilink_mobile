@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'crop_navigator_screen.dart';
 import 'timeline_list_screen.dart';
-import 'marketplace_screen.dart';
+import 'market_hub_screen.dart';
 import 'disease_scanner_screen.dart';
 import 'logistics_screen.dart';
 import 'chat_screen.dart';
@@ -38,7 +38,7 @@ class _HomeScreenState extends State<HomeScreen> {
     CropNavigatorScreen(),
     DiseaseScannerScreen(),
     LogisticsScreen(),
-    MarketplaceScreen(),
+    MarketHubScreen(),
   ];
 
   @override
