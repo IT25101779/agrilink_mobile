@@ -131,6 +131,98 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
     return Column(children: rows);
   }
 
+  // Localised text for each readiness check (the server sends English).
+  static const Map<String, List<String>> _readinessText = {
+    "cycles": ["Complete 2 crop cycles", "වගා වට 2ක් සම්පූර්ණ කරන්න", "Finish a crop timeline (or repay a funded campaign) to add a completed cycle.", "වගා කාලසටහනක් අවසන් කරන්න (හෝ අරමුදල් ලද ව්‍යාපෘතියක් ආපසු ගෙවන්න)."],
+    "sales": ["Make 5 completed sales", "සම්පූර්ණ විකුණුම් 5ක් කරන්න", "List produce on the marketplace and mark orders as sold.", "වෙළඳපොළේ අස්වැන්න ලැයිස්තුගත කර ඇණවුම් විකුණා ඇති බව සලකුණු කරන්න."],
+    "volume": ["Reach LKR 100,000 in total sales", "මුළු විකුණුම් රු. 100,000 කට ළඟා වන්න", "Sell more produce, or join Group Lots to reach bulk buyers.", "තවත් අස්වැන්න විකුණන්න, නැතහොත් තොග ගැනුම්කරුවන් වෙත ළඟා වීමට කණ්ඩායම් ලොට් වලට එක්වන්න."],
+    "quality": ["Keep buyer rejections at 20% or less", "ගැනුම්කරු ප්‍රතික්ෂේප 20% හෝ ඊට අඩුවෙන් තබන්න", "Grade and pack produce carefully; sell while it is still fresh.", "අස්වැන්න ශ්‍රේණිගත කර සෝදුවලින් පුරවන්න; නැවුම්ව තිබියදී විකුණන්න."],
+    "repayment": ["Repay one funding campaign", "අරමුදල් ව්‍යාපෘතියක් ආපසු ගෙවන්න", "Ask investors to fund a crop, then repay after harvest.", "ආයෝජකයන්ගෙන් බෝගයකට අරමුදල් ඉල්ලා, අස්වැන්නෙන් පසු ආපසු ගෙවන්න."],
+    "score": ["Reach a credit score of 600", "ණය ලකුණු 600 කට ළඟා වන්න", "The score grows with completed cycles and repaid funding.", "සම්පූර්ණ කළ වට සහ ආපසු ගෙවූ අරමුදල් සමඟ ලකුණු වැඩි වේ."],
+    "community": ["Complete one group sale", "කණ්ඩායම් විකුණුමක් සම්පූර්ණ කරන්න", "Join a Group Lot in the Market tab and wait for a buyer to claim it.", "වෙළඳපොළ ටැබ් එකේ කණ්ඩායම් ලොට් එකකට එක්වී ගැනුම්කරුවෙකු එය ගන්නා තුරු බලා සිටින්න."],
+    "history": ["Be active for 60 days", "දින 60ක් සක්‍රියව සිටින්න", "A longer record builds trust; keep using AgriLink.", "දිගු වාර්තාවක් විශ්වාසය ගොඩනඟයි; AgriLink භාවිත කරමින් සිටින්න."],
+  };
+
+  /// LOAN READINESS: how close the farmer is to what lenders like to see.
+  Widget _readinessCard(Map<String, dynamic> readiness) {
+    final percent = numOf(readiness["percent"]);
+    final level = "${readiness["level"]}";
+    final passed = (readiness["passed"] as num?)?.toInt() ?? 0;
+    final total = (readiness["total"] as num?)?.toInt() ?? 0;
+    final checks = (readiness["checks"] as List? ?? []).map((c) => Map<String, dynamic>.from(c as Map)).toList();
+
+    final Color color = level == "loan_ready" ? AppColors.forest : level == "almost_ready" ? AppColors.gold : AppColors.indigo;
+    final String levelLabel = level == "loan_ready"
+        ? tr("Loan-ready", "ණය සඳහා සූදානම්")
+        : level == "almost_ready"
+            ? tr("Almost ready", "සූදානම් වෙමින්")
+            : tr("Getting started", "ආරම්භක අවස්ථාව");
+
+    return SoftCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.account_balance_rounded, size: 18, color: AppColors.forest),
+              const SizedBox(width: 8),
+              Expanded(child: Text(tr("Loan readiness", "ණය සූදානම"), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800))),
+              StatusPill(label: levelLabel, color: color),
+            ],
+          ),
+          const SizedBox(height: 12),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.end,
+            children: [
+              Text("$passed", style: TextStyle(fontSize: 30, fontWeight: FontWeight.w800, color: color)),
+              Padding(
+                padding: const EdgeInsets.only(bottom: 5, left: 4),
+                child: Text(tr("of $total checks", "චෙක් $total න්"), style: TextStyle(fontSize: 13, color: mutedOf(context))),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          RoundedBar(value: percent / 100, color: color, height: 10),
+          const SizedBox(height: 14),
+          ...checks.map((c) {
+            final met = c["met"] == true;
+            final id = "${c["id"]}";
+            final text = _readinessText[id];
+            final label = text != null ? tr(text[0], text[1]) : "${c["label"]}";
+            final tip = text != null ? tr(text[2], text[3]) : "${c["tip"]}";
+            return Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Icon(met ? Icons.check_circle_rounded : Icons.radio_button_unchecked_rounded, size: 20, color: met ? AppColors.forest : mutedOf(context)),
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          met ? label : "$label  (${groupedNumber(numOf(c["current"]))}/${groupedNumber(numOf(c["target"]))})",
+                          style: TextStyle(fontSize: 13.5, fontWeight: met ? FontWeight.w600 : FontWeight.w700, color: inkOf(context)),
+                        ),
+                        if (!met) Text(tip, style: TextStyle(fontSize: 12, color: mutedOf(context), height: 1.35)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+          Text(
+            tr("This is AgriLink's own checklist to guide you. It is not a bank's criteria and not a credit decision.",
+                "මෙය ඔබට මග පෙන්වීමට AgriLink හි ම චෙක්ලිස්ට් එකකි. එය බැංකුවක නිර්ණායක හෝ ණය තීරණයක් නොවේ."),
+            style: TextStyle(fontSize: 11, color: mutedOf(context), height: 1.35),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _body(Map<String, dynamic> passport) {
     final t = AppLocale.instance.t;
     final stats = Map<String, dynamic>.from(passport["stats"] as Map);
@@ -141,6 +233,7 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
             ? t("creditScoreGood")
             : t("creditScoreBuilding");
     final crops = (stats["cropsSold"] as List? ?? []).map((c) => "$c").toList();
+    final readiness = passport["readiness"] is Map ? Map<String, dynamic>.from(passport["readiness"] as Map) : null;
 
     return ListView(
       padding: const EdgeInsets.fromLTRB(16, 16, 16, 40),
@@ -183,6 +276,7 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
             ),
           ),
         ),
+        if (readiness != null) FadeSlideIn(delayMs: 110, child: _readinessCard(readiness)),
         FadeSlideIn(
           delayMs: 140,
           child: Column(

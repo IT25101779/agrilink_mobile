@@ -61,6 +61,22 @@ class InsightsApi {
 
   static Future<Map<String, dynamic>> getSellOrHold() => _get("/insights/sell-or-hold");
 
+  /// PROFIT PLANNER. Any of the three optional numbers replaces the typical
+  /// planning figure the server would otherwise use.
+  static Future<Map<String, dynamic>> getProfitPlan(
+    String cropType, {
+    double acres = 1,
+    double? yieldKgPerAcre,
+    double? costPerAcre,
+    double? pricePerKg,
+  }) {
+    final params = <String>["acres=$acres"];
+    if (yieldKgPerAcre != null) params.add("yieldKgPerAcre=$yieldKgPerAcre");
+    if (costPerAcre != null) params.add("costPerAcre=$costPerAcre");
+    if (pricePerKg != null) params.add("pricePerKg=$pricePerKg");
+    return _get("/insights/profit-plan/${Uri.encodeComponent(cropType)}?${params.join("&")}");
+  }
+
   static Future<Map<String, dynamic>> generatePriceAlerts() => _post("/insights/price-alerts/generate");
 
   /// The farmer's own listings — each one includes its live Freshness Clock.

@@ -10,6 +10,7 @@ import '../services/soil_type_service.dart';
 import '../services/insights_api.dart';
 import '../localization/tr.dart';
 import '../widgets/ui_kit.dart';
+import '../widgets/profit_planner_sheet.dart';
 import '../localization/app_locale.dart';
 import '../theme/app_theme.dart';
 import '../widgets/crop_thumbnail.dart';
@@ -83,6 +84,12 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
       _signalsTotalPlantings = (data["totalPlantings"] as num?)?.toInt() ?? 0;
       _signalsLoaded = true;
     });
+  }
+
+  /// PROFIT PLANNER for the plot size the farmer typed in above.
+  void _openProfitPlan(CropOption crop) {
+    final acres = double.tryParse(_landSizeController.text) ?? 1.0;
+    ProfitPlannerSheet.show(context, cropType: crop.name, acres: acres <= 0 ? 1.0 : acres);
   }
 
   Map<String, dynamic>? _signalFor(CropOption crop) => _cropSignals[crop.name.toLowerCase()];
@@ -442,6 +449,18 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
                             const SizedBox(height: 6),
                             Wrap(spacing: 5, runSpacing: 5, children: _signalPills(crop)),
                           ],
+                          if (crop.category != CropCategory.plantation)
+                            TextButton.icon(
+                              onPressed: () => _openProfitPlan(crop),
+                              icon: const Icon(Icons.calculate_rounded, size: 16),
+                              label: Text(tr("Profit estimate", "ලාභ ඇස්තමේන්තුව"), style: const TextStyle(fontSize: 12.5)),
+                              style: TextButton.styleFrom(
+                                padding: EdgeInsets.zero,
+                                minimumSize: const Size(0, 32),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                alignment: Alignment.centerLeft,
+                              ),
+                            ),
                         ],
                       ),
                       trailing: ElevatedButton(
