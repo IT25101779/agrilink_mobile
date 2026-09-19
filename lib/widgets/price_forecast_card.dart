@@ -63,11 +63,11 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
   String _confidenceLabel(String c) {
     switch (c) {
       case "high":
-        return tr("High confidence", "ඉහළ විශ්වාසය");
+        return tr("High confidence", "ඉහළ විශ්වාසය", "அதிக நம்பிக்கை");
       case "medium":
-        return tr("Medium confidence", "මධ්‍යම විශ්වාසය");
+        return tr("Medium confidence", "මධ්‍යම විශ්වාසය", "நடுத்தர நம்பிக்கை");
       default:
-        return tr("Low confidence", "අඩු විශ්වාසය");
+        return tr("Low confidence", "අඩු විශ්වාසය", "குறைந்த நம்பிக்கை");
     }
   }
 
@@ -83,13 +83,13 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
   }
 
   String _driverLabel(String label) {
-    if (!isSinhala()) return label;
+    if (!isSinhala() && !isTamil()) return label;
     final lower = label.toLowerCase();
-    if (lower.contains("oversupply")) return "වෙළඳපොළේ අතිරික්ත සැපයුම";
-    if (lower.contains("falling supply")) return "සැපයුම අඩුවීම";
-    if (lower.contains("festival")) return "උත්සව ඉල්ලුම";
-    if (lower.contains("weather")) return "කාලගුණ අවදානම";
-    if (lower.contains("disease")) return "රෝග පැතිරීම නිසා සැපයුම අඩුවීම";
+    if (lower.contains("oversupply")) return tr(label, "වෙළඳපොළේ අතිරික්ත සැපයුම", "சந்தையில் அதிக விநியோகம்");
+    if (lower.contains("falling supply")) return tr(label, "සැපයුම අඩුවීම", "விநியோகம் குறைவு");
+    if (lower.contains("festival")) return tr(label, "උත්සව ඉල්ලුම", "பண்டிகை தேவை");
+    if (lower.contains("weather")) return tr(label, "කාලගුණ අවදානම", "வானிலை அபாயம்");
+    if (lower.contains("disease")) return tr(label, "රෝග පැතිරීම නිසා සැපයුම අඩුවීම", "நோய் பரவலால் விநியோகம் குறைவு");
     return label;
   }
 
@@ -108,7 +108,7 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
           icon: Icons.cloud_off_rounded,
           color: AppColors.inkMuted,
           text: tr("The price forecast isn't available right now. You can still set your own price.",
-              "මිල අනාවැකිය දැන් ලබා ගත නොහැක. ඔබට තවමත් ඔබේම මිල නියම කළ හැක."),
+              "මිල අනාවැකිය දැන් ලබා ගත නොහැක. ඔබට තවමත් ඔබේම මිල නියම කළ හැක.", "விலை முன்னறிவிப்பு இப்போது கிடைக்கவில்லை. நீங்கள் உங்கள் சொந்த விலையை நிர்ணயிக்கலாம்."),
         ),
       );
     }
@@ -131,10 +131,10 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
       final event = peak["event"] != null ? " · ${peak["event"]}" : "";
       outlook = tr(
         "Peak around ${DateFormat("d MMM").format(peakDate)}: ${lkr(numOf(peak["pricePerKg"]))}/kg (+${peakChange.toStringAsFixed(1)}%)$event",
-        "${DateFormat("d MMM").format(peakDate)} පමණ ඉහළම මිල: ${lkr(numOf(peak["pricePerKg"]))}/kg (+${peakChange.toStringAsFixed(1)}%)",
+        "${DateFormat("d MMM").format(peakDate)} පමණ ඉහළම මිල: ${lkr(numOf(peak["pricePerKg"]))}/kg (+${peakChange.toStringAsFixed(1)}%)", "${DateFormat("d MMM").format(peakDate)} அளவில் உச்சம்: ${lkr(numOf(peak["pricePerKg"]))}/கி.கி. (+${peakChange.toStringAsFixed(1)}%)$event",
       );
     } else {
-      outlook = tr("Prices look steady for the next $weeks weeks.", "ඉදිරි සති $weeks සඳහා මිල ස්ථාවරව පවතී.");
+      outlook = tr("Prices look steady for the next $weeks weeks.", "ඉදිරි සති $weeks සඳහා මිල ස්ථාවරව පවතී.", "அடுத்த $weeks வாரங்களுக்கு விலை நிலையாக இருக்கும்.");
     }
 
     return SoftCard(
@@ -148,7 +148,7 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
               const SizedBox(width: 6),
               Expanded(
                 child: Text(
-                  "${tr("Price outlook", "මිල අනාවැකිය")} · ${widget.cropType}",
+                  "${tr("Price outlook", "මිල අනාවැකිය", "விலை முன்னறிவிப்பு")} · ${widget.cropType}",
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
@@ -165,7 +165,7 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
               const SizedBox(width: 4),
               Padding(
                 padding: const EdgeInsets.only(bottom: 4),
-                child: Text("/kg ${tr("today", "අද")}", style: TextStyle(fontSize: 12, color: mutedOf(context))),
+                child: Text("/kg ${tr("today", "අද", "இன்று")}", style: TextStyle(fontSize: 12, color: mutedOf(context))),
               ),
             ],
           ),
@@ -189,15 +189,15 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(tr("Today", "අද"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
+              Text(tr("Today", "අද", "இன்று"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
               Row(
                 children: [
                   const Icon(Icons.circle, size: 8, color: AppColors.gold),
                   const SizedBox(width: 4),
-                  Text(tr("Festival demand", "උත්සව ඉල්ලුම"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
+                  Text(tr("Festival demand", "උත්සව ඉල්ලුම", "பண்டிகை தேவை"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
                 ],
               ),
-              Text(tr("+$weeks weeks", "+සති $weeks"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
+              Text(tr("+$weeks weeks", "+සති $weeks", "+$weeks வாரங்கள்"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
             ],
           ),
           if (drivers.isNotEmpty) ...[
@@ -220,7 +220,7 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
               child: OutlinedButton.icon(
                 onPressed: () => widget.onUsePrice!(today),
                 icon: const Icon(Icons.check_rounded, size: 18),
-                label: Text(tr("Use ${lkr(today)}/kg as my asking price", "${lkr(today)}/kg මගේ මිල ලෙස යොදන්න")),
+                label: Text(tr("Use ${lkr(today)}/kg as my asking price", "${lkr(today)}/kg මගේ මිල ලෙස යොදන්න", "${lkr(today)}/கி.கி. ஐ என் விலையாக வை")),
               ),
             ),
           ],
@@ -228,9 +228,9 @@ class _PriceForecastCardState extends State<PriceForecastCard> {
           Text(
             thinData
                 ? tr("Not enough sales data for this crop yet — treat this as a rough guide only.",
-                    "මෙම බෝගය සඳහා විකුණුම් දත්ත තවම ප්‍රමාණවත් නැත — මෙය දළ මගපෙන්වීමක් ලෙස සලකන්න.")
+                    "මෙම බෝගය සඳහා විකුණුම් දත්ත තවම ප්‍රමාණවත් නැත — මෙය දළ මගපෙන්වීමක් ලෙස සලකන්න.", "இந்தப் பயிருக்கு இன்னும் போதிய விற்பனைத் தரவு இல்லை — இதைத் தோராய வழிகாட்டியாக மட்டும் கருதுங்கள்.")
                 : tr("Rule-based estimate from recent sales, the festival calendar, supply and weather. Not a guarantee.",
-                    "මෑත විකුණුම්, උත්සව දින දර්ශනය, සැපයුම සහ කාලගුණය මත පදනම් වූ ගණනය කිරීමකි. සහතිකයක් නොවේ."),
+                    "මෑත විකුණුම්, උත්සව දින දර්ශනය, සැපයුම සහ කාලගුණය මත පදනම් වූ ගණනය කිරීමකි. සහතිකයක් නොවේ.", "சமீபத்திய விற்பனை, பண்டிகை நாட்காட்டி, விநியோகம் மற்றும் வானிலை அடிப்படையிலான மதிப்பீடு. உத்தரவாதம் அல்ல."),
             style: TextStyle(fontSize: 11, color: mutedOf(context), height: 1.35),
           ),
         ],

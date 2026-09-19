@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../localization/tr.dart';
 import '../theme/app_theme.dart';
 
 /// Small shared building blocks used by the newer screens (Group Lots,
@@ -65,8 +66,9 @@ class StatusPill extends StatelessWidget {
   }
 }
 
-/// A rounded card with the app's border and surface colours.
-class SoftCard extends StatelessWidget {
+/// A rounded card with a soft shadow. When it can be tapped it also gently
+/// shrinks while pressed, so it feels alive under the finger.
+class SoftCard extends StatefulWidget {
   final Widget child;
   final EdgeInsetsGeometry padding;
   final EdgeInsetsGeometry margin;
@@ -83,23 +85,43 @@ class SoftCard extends StatelessWidget {
   });
 
   @override
+  State<SoftCard> createState() => _SoftCardState();
+}
+
+class _SoftCardState extends State<SoftCard> {
+  bool _pressed = false;
+
+  @override
   Widget build(BuildContext context) {
+    final dark = isDarkMode(context);
+    final radius = BorderRadius.circular(20);
     final decoration = BoxDecoration(
-      color: background ?? surfaceOf(context),
-      borderRadius: BorderRadius.circular(16),
+      color: widget.background ?? surfaceOf(context),
+      borderRadius: radius,
       border: Border.all(color: borderOf(context)),
+      boxShadow: [BoxShadow(color: Colors.black.withOpacity(dark ? 0.28 : 0.05), blurRadius: 16, offset: const Offset(0, 5))],
     );
-    final content = Padding(padding: padding, child: child);
-    return Container(
-      margin: margin,
-      decoration: decoration,
-      child: onTap == null
-          ? content
-          : Material(
-              color: Colors.transparent,
-              borderRadius: BorderRadius.circular(16),
-              child: InkWell(borderRadius: BorderRadius.circular(16), onTap: onTap, child: content),
-            ),
+    final content = Padding(padding: widget.padding, child: widget.child);
+    return AnimatedScale(
+      scale: _pressed ? 0.98 : 1,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+      child: Container(
+        margin: widget.margin,
+        decoration: decoration,
+        child: widget.onTap == null
+            ? content
+            : Material(
+                color: Colors.transparent,
+                borderRadius: radius,
+                child: InkWell(
+                  borderRadius: radius,
+                  onTap: widget.onTap,
+                  onHighlightChanged: (down) => setState(() => _pressed = down),
+                  child: content,
+                ),
+              ),
+      ),
     );
   }
 }
@@ -188,13 +210,14 @@ class RoundedBar extends StatelessWidget {
 }
 
 /// "Closes in 3 days" / "Closes today" / "Closed"
-String closesInText(String? isoDate, {required bool si}) {
+String closesInText(String? isoDate, {bool si = false}) {
+  // (the `si` flag is kept only so older calls still compile; the language now comes from tr())
   if (isoDate == null) return "";
   final date = DateTime.tryParse(isoDate);
   if (date == null) return "";
   final hours = date.difference(DateTime.now()).inHours;
-  if (hours <= 0) return si ? "වසා ඇත" : "Closed";
+  if (hours <= 0) return tr("Closed", "වසා ඇත", "மூடப்பட்டது");
   final days = (hours / 24).ceil();
-  if (days <= 1) return si ? "අද වසයි" : "Closes today";
-  return si ? "දින $days කින් වසයි" : "Closes in $days days";
+  if (days <= 1) return tr("Closes today", "අද වසයි", "இன்று மூடப்படும்");
+  return tr("Closes in $days days", "දින $days කින් වසයි", "$days நாட்களில் மூடப்படும்");
 }

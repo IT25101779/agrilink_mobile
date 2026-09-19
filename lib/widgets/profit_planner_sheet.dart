@@ -85,7 +85,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
     } else {
       setState(() {
         _loading = false;
-        _error = result["message"]?.toString() ?? tr("Could not build the estimate.", "ඇස්තමේන්තුව සැකසිය නොහැකි විය.");
+        _error = result["message"]?.toString() ?? tr("Could not build the estimate.", "ඇස්තමේන්තුව සැකසිය නොහැකි විය.", "மதிப்பீட்டை உருவாக்க முடியவில்லை.");
       });
     }
   }
@@ -107,15 +107,15 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
   String _verdictLabel(String verdict) {
     switch (verdict) {
       case "good":
-        return tr("Strong return", "හොඳ ප්‍රතිලාභයක්");
+        return tr("Strong return", "හොඳ ප්‍රතිලාභයක්", "சிறந்த வருமானம்");
       case "fair":
-        return tr("Fair return", "සාධාරණ ප්‍රතිලාභයක්");
+        return tr("Fair return", "සාධාරණ ප්‍රතිලාභයක්", "நியாயமான வருமானம்");
       case "marginal":
-        return tr("Thin margin", "අඩු ලාභයක්");
+        return tr("Thin margin", "අඩු ලාභයක්", "குறைந்த லாபம்");
       case "loss":
-        return tr("Likely loss", "පාඩුවක් වීමට ඉඩ ඇත");
+        return tr("Likely loss", "පාඩුවක් වීමට ඉඩ ඇත", "நஷ்டம் ஏற்பட வாய்ப்பு");
       default:
-        return tr("Enter your expected price", "ඔබ බලාපොරොත්තු වන මිල ඇතුළත් කරන්න");
+        return tr("Enter your expected price", "ඔබ බලාපොරොත්තු වන මිල ඇතුළත් කරන්න", "நீங்கள் எதிர்பார்க்கும் விலையை உள்ளிடுங்கள்");
     }
   }
 
@@ -167,7 +167,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
           labelText: label,
           suffixText: suffix,
           border: const OutlineInputBorder(),
-          helperText: edited ? tr("Edited by you", "ඔබ වෙනස් කළා") : tr("Typical estimate", "සාමාන්‍ය ඇස්තමේන්තුව"),
+          helperText: edited ? tr("Edited by you", "ඔබ වෙනස් කළා", "நீங்கள் மாற்றியது") : tr("Typical estimate", "සාමාන්‍ය ඇස්තමේන්තුව", "வழக்கமான மதிப்பீடு"),
           isDense: true,
         ),
       ),
@@ -183,7 +183,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
           color: AppColors.gold,
           text: tr(
             "A profit estimate for one crop cycle is only available for annual crops. Tree and plantation crops take several years to pay back.",
-            "එක් බෝග වටයක ලාභ ඇස්තමේන්තුවක් ලබා ගත හැක්කේ වාර්ෂික බෝග සඳහා පමණි. ගස් සහ වැවිලි බෝග ආපසු ගෙවීමට වසර ගණනක් ගත වේ.",
+            "එක් බෝග වටයක ලාභ ඇස්තමේන්තුවක් ලබා ගත හැක්කේ වාර්ෂික බෝග සඳහා පමණි. ගස් සහ වැවිලි බෝග ආපසු ගෙවීමට වසර ගණනක් ගත වේ.", "ஒரு பயிர் சுழற்சிக்கான லாப மதிப்பீடு ஆண்டுப் பயிர்களுக்கு மட்டுமே கிடைக்கும். மரப் பயிர்களும் தோட்டப் பயிர்களும் ஈடுகட்ட பல ஆண்டுகள் ஆகும்.",
           ),
         ),
       );
@@ -216,16 +216,16 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
               StatusPill(label: _verdictLabel(verdict), color: color),
               const SizedBox(height: 10),
               if (expected != null) ...[
-                Text(tr("Expected profit", "බලාපොරොත්තු වන ලාභය"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
+                Text(tr("Expected profit", "බලාපොරොත්තු වන ලාභය", "எதிர்பார்க்கும் லாபம்"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
                 Text(_signedLkr(numOf(expected["profitLkr"])), style: TextStyle(fontSize: 28, fontWeight: FontWeight.w800, color: numOf(expected["profitLkr"]) < 0 ? AppColors.danger : AppColors.forest)),
                 Text(
-                  "${numOf(expected["roiPercent"]).toStringAsFixed(0)}% ${tr("return on cost", "වියදමට ප්‍රතිලාභය")}${harvest != null ? " · ${tr("harvest around", "අස්වැන්න")} ${DateFormat("d MMM yyyy").format(harvest.toLocal())}" : ""}",
+                  "${numOf(expected["roiPercent"]).toStringAsFixed(0)}% ${tr("return on cost", "වියදමට ප්‍රතිලාභය", "செலவுக்கு வருமானம்")}${harvest != null ? " · ${tr("harvest around", "අස්වැන්න", "அறுவடை சுமார்")} ${DateFormat("d MMM yyyy").format(harvest.toLocal())}" : ""}",
                   style: TextStyle(fontSize: 12, color: mutedOf(context)),
                 ),
               ] else
                 Text(
                   tr("To break even you must sell at about LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))}/kg. Enter the price you expect below.",
-                      "පාඩුවක් නොවීමට ඔබ කි.ග්‍රෑ. එකක් LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))} පමණ ගණනට විකිණිය යුතුයි. ඔබ බලාපොරොත්තු වන මිල පහත ඇතුළත් කරන්න."),
+                      "පාඩුවක් නොවීමට ඔබ කි.ග්‍රෑ. එකක් LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))} පමණ ගණනට විකිණිය යුතුයි. ඔබ බලාපොරොත්තු වන මිල පහත ඇතුළත් කරන්න.", "நஷ்டமில்லாமல் இருக்க நீங்கள் கி.கி. ஒன்றுக்குச் சுமார் LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))} விலையில் விற்க வேண்டும். நீங்கள் எதிர்பார்க்கும் விலையைக் கீழே உள்ளிடுங்கள்."),
                   style: const TextStyle(fontSize: 13.5, height: 1.4),
                 ),
             ],
@@ -233,15 +233,15 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
         ),
         if (scenarios != null) ...[
           const SizedBox(height: 14),
-          Text(tr("What could happen", "සිදුවිය හැක්කේ කුමක්ද"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
+          Text(tr("What could happen", "සිදුවිය හැක්කේ කුමක්ද", "என்ன நடக்கலாம்"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
           const SizedBox(height: 8),
           Row(
             children: [
-              _scenarioBox(tr("Poor season", "දුර්වල කන්නය"), Map<String, dynamic>.from(scenarios["low"] as Map), AppColors.gold),
+              _scenarioBox(tr("Poor season", "දුර්වල කන්නය", "மோசமான பருவம்"), Map<String, dynamic>.from(scenarios["low"] as Map), AppColors.gold),
               const SizedBox(width: 8),
-              _scenarioBox(tr("Expected", "බලාපොරොත්තු"), exp, AppColors.forest),
+              _scenarioBox(tr("Expected", "බලාපොරොත්තු", "எதிர்பார்ப்பு"), exp, AppColors.forest),
               const SizedBox(width: 8),
-              _scenarioBox(tr("Good season", "හොඳ කන්නය"), Map<String, dynamic>.from(scenarios["high"] as Map), AppColors.forest),
+              _scenarioBox(tr("Good season", "හොඳ කන්නය", "நல்ல பருவம்"), Map<String, dynamic>.from(scenarios["high"] as Map), AppColors.forest),
             ],
           ),
           const SizedBox(height: 14),
@@ -249,11 +249,11 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
             margin: EdgeInsets.zero,
             child: Column(
               children: [
-                _row(tr("Harvest to sell", "විකිණීමට අස්වැන්න"), "${priceText(numOf(exp["sellableKg"]))} kg"),
-                _row(tr("Price at harvest time", "අස්වැන්න නෙළන විට මිල"), "LKR ${priceText(numOf(exp["pricePerKg"]))}/kg"),
-                _row(tr("Expected income", "බලාපොරොත්තු වන ආදායම"), lkr(numOf(exp["revenueLkr"]))),
-                _row(tr("Total cost", "මුළු වියදම"), lkr(numOf(exp["costLkr"]))),
-                _row(tr("Break-even price", "පාඩුවක් නොවන මිල"), "LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))}/kg"),
+                _row(tr("Harvest to sell", "විකිණීමට අස්වැන්න", "விற்கக்கூடிய அறுவடை"), "${priceText(numOf(exp["sellableKg"]))} kg"),
+                _row(tr("Price at harvest time", "අස්වැන්න නෙළන විට මිල", "அறுவடை நேர விலை"), "LKR ${priceText(numOf(exp["pricePerKg"]))}/kg"),
+                _row(tr("Expected income", "බලාපොරොත්තු වන ආදායම", "எதிர்பார்க்கும் வருமானம்"), lkr(numOf(exp["revenueLkr"]))),
+                _row(tr("Total cost", "මුළු වියදම", "மொத்தச் செலவு"), lkr(numOf(exp["costLkr"]))),
+                _row(tr("Break-even price", "පාඩුවක් නොවන මිල", "நஷ்டமில்லாத விலை"), "LKR ${priceText(numOf(plan["breakEvenPricePerKg"]))}/kg"),
               ],
             ),
           ),
@@ -262,41 +262,41 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
               padding: const EdgeInsets.only(top: 6),
               child: Text(
                 tr("Price comes from the market forecast (${priceConfidence == "high" ? "high" : priceConfidence == "medium" ? "medium" : "low"} confidence).",
-                    "මිල ලබාගත්තේ වෙළඳපොළ අනාවැකියෙනි."),
+                    "මිල ලබාගත්තේ වෙළඳපොළ අනාවැකියෙනි.", "விலை சந்தை முன்னறிவிப்பிலிருந்து பெறப்பட்டது (${priceConfidence == "high" ? "உயர்" : priceConfidence == "medium" ? "நடுத்தர" : "குறைந்த"} நம்பிக்கை)."),
                 style: TextStyle(fontSize: 11.5, color: mutedOf(context)),
               ),
             ),
         ],
         const SizedBox(height: 16),
-        Text(tr("Your numbers", "ඔබේ සංඛ්‍යා"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
+        Text(tr("Your numbers", "ඔබේ සංඛ්‍යා", "உங்கள் எண்கள்"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
         const SizedBox(height: 4),
         Text(
-          tr("These are typical estimates. Change them to match your own farm, then recalculate.", "මේවා සාමාන්‍ය ඇස්තමේන්තු වේ. ඔබේ ගොවිපළට ගැළපෙන පරිදි වෙනස් කර නැවත ගණනය කරන්න."),
+          tr("These are typical estimates. Change them to match your own farm, then recalculate.", "මේවා සාමාන්‍ය ඇස්තමේන්තු වේ. ඔබේ ගොවිපළට ගැළපෙන පරිදි වෙනස් කර නැවත ගණනය කරන්න.", "இவை வழக்கமான மதிப்பீடுகள். உங்கள் சொந்தப் பண்ணைக்கு ஏற்ப மாற்றி, மீண்டும் கணக்கிடுங்கள்."),
           style: TextStyle(fontSize: 12, color: mutedOf(context), height: 1.35),
         ),
         const SizedBox(height: 10),
-        _field(_yieldController, tr("Harvest per acre", "අක්කරයකට අස්වැන්න"), "kg", assumptions["yieldIsEdited"] == true),
-        _field(_costController, tr("Cost per acre", "අක්කරයකට වියදම"), "LKR", assumptions["costIsEdited"] == true),
-        _field(_priceController, tr("Price you expect", "ඔබ බලාපොරොත්තු වන මිල"), "LKR/kg", assumptions["priceSource"] == "farmer"),
+        _field(_yieldController, tr("Harvest per acre", "අක්කරයකට අස්වැන්න", "ஏக்கருக்கு அறுவடை"), "kg", assumptions["yieldIsEdited"] == true),
+        _field(_costController, tr("Cost per acre", "අක්කරයකට වියදම", "ஏக்கருக்குச் செலவு"), "LKR", assumptions["costIsEdited"] == true),
+        _field(_priceController, tr("Price you expect", "ඔබ බලාපොරොත්තු වන මිල", "நீங்கள் எதிர்பார்க்கும் விலை"), "LKR/kg", assumptions["priceSource"] == "farmer"),
         Row(
           children: [
             Expanded(
               child: ElevatedButton.icon(
                 onPressed: _loading ? null : () => _load(useEdits: true),
                 icon: const Icon(Icons.calculate_rounded, size: 18),
-                label: Text(tr("Recalculate", "නැවත ගණනය කරන්න")),
+                label: Text(tr("Recalculate", "නැවත ගණනය කරන්න", "மீண்டும் கணக்கிடு")),
               ),
             ),
             const SizedBox(width: 8),
             OutlinedButton(
               onPressed: _loading ? null : () => _load(),
-              child: Text(tr("Reset", "යළි පිහිටුවන්න")),
+              child: Text(tr("Reset", "යළි පිහිටුවන්න", "மீட்டமை")),
             ),
           ],
         ),
         if (notes.isNotEmpty) ...[
           const SizedBox(height: 16),
-          Text(tr("Things to watch", "අවධානය යොමු කළ යුතු දේ"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
+          Text(tr("Things to watch", "අවධානය යොමු කළ යුතු දේ", "கவனிக்க வேண்டியவை"), style: const TextStyle(fontSize: 14.5, fontWeight: FontWeight.w800)),
           const SizedBox(height: 6),
           ...notes.map(
             (note) => Padding(
@@ -318,7 +318,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
         Text(
           tr(
             "Planning estimate only. Real yield, cost and price vary by farm, season and inputs. Not a guarantee of profit.",
-            "සැලසුම් ඇස්තමේන්තුවක් පමණි. සැබෑ අස්වැන්න, වියදම සහ මිල ගොවිපළ, කන්නය සහ යෙදවුම් අනුව වෙනස් වේ. ලාභයක් පිළිබඳ සහතිකයක් නොවේ.",
+            "සැලසුම් ඇස්තමේන්තුවක් පමණි. සැබෑ අස්වැන්න, වියදම සහ මිල ගොවිපළ, කන්නය සහ යෙදවුම් අනුව වෙනස් වේ. ලාභයක් පිළිබඳ සහතිකයක් නොවේ.", "திட்டமிடல் மதிப்பீடு மட்டுமே. உண்மையான விளைச்சல், செலவு மற்றும் விலை பண்ணை, பருவம் மற்றும் இடுபொருட்களைப் பொறுத்து மாறும். லாபத்திற்கு உத்தரவாதம் அல்ல.",
           ),
           style: TextStyle(fontSize: 11, color: mutedOf(context), height: 1.4),
         ),
@@ -342,7 +342,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
               const SizedBox(height: 10),
               Text(_error!, textAlign: TextAlign.center),
               const SizedBox(height: 12),
-              ElevatedButton(onPressed: () => _load(), child: Text(tr("Try again", "නැවත උත්සාහ කරන්න"))),
+              ElevatedButton(onPressed: () => _load(), child: Text(tr("Try again", "නැවත උත්සාහ කරන්න", "மீண்டும் முயற்சிக்கவும்"))),
             ],
           ),
         ),
@@ -371,7 +371,7 @@ class _ProfitPlannerSheetState extends State<ProfitPlannerSheet> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      "${tr("Profit estimate", "ලාභ ඇස්තමේන්තුව")} · ${widget.cropType}",
+                      "${tr("Profit estimate", "ලාභ ඇස්තමේන්තුව", "லாப மதிப்பீடு")} · ${widget.cropType}",
                       maxLines: 2,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(fontSize: 17, fontWeight: FontWeight.w800),

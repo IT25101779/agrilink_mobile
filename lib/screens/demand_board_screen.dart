@@ -67,7 +67,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text("${tr("Offer", "පිරිනැමුම")} — ${request["cropType"]}"),
+        title: Text("${tr("Offer", "පිරිනැමුම", "சலுகை")} — ${request["cropType"]}"),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -76,8 +76,8 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                 controller: qtyController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: tr("Quantity you can supply (kg)", "ඔබට සැපයිය හැකි ප්‍රමාණය (කි.ග්‍රෑ.)"),
-                  helperText: tr("Up to ${priceText(remaining)} kg", "උපරිම කි.ග්‍රෑ. ${priceText(remaining)}"),
+                  labelText: tr("Quantity you can supply (kg)", "ඔබට සැපයිය හැකි ප්‍රමාණය (කි.ග්‍රෑ.)", "நீங்கள் வழங்கக்கூடிய அளவு (கி.கி.)"),
+                  helperText: tr("Up to ${priceText(remaining)} kg", "උපරිම කි.ග්‍රෑ. ${priceText(remaining)}", "அதிகபட்சம் ${priceText(remaining)} கி.கி."),
                 ),
               ),
               const SizedBox(height: 10),
@@ -85,22 +85,22 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                 controller: priceController,
                 keyboardType: TextInputType.number,
                 decoration: InputDecoration(
-                  labelText: tr("Your price per kg (LKR)", "ඔබේ මිල (LKR/කි.ග්‍රෑ.)"),
-                  helperText: tr("Buyer's maximum: LKR ${priceText(maxPrice)}", "ගැනුම්කරුගේ උපරිමය: LKR ${priceText(maxPrice)}"),
+                  labelText: tr("Your price per kg (LKR)", "ඔබේ මිල (LKR/කි.ග්‍රෑ.)", "உங்கள் விலை ஒரு கி.கி.க்கு (LKR)"),
+                  helperText: tr("Buyer's maximum: LKR ${priceText(maxPrice)}", "ගැනුම්කරුගේ උපරිමය: LKR ${priceText(maxPrice)}", "வாங்குபவரின் அதிகபட்சம்: LKR ${priceText(maxPrice)}"),
                 ),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: messageController,
                 maxLength: 300,
-                decoration: InputDecoration(labelText: tr("Message (optional)", "පණිවිඩය (අත්‍යවශ්‍ය නොවේ)")),
+                decoration: InputDecoration(labelText: tr("Message (optional)", "පණිවිඩය (අත්‍යවශ්‍ය නොවේ)", "செய்தி (விருப்பம்)")),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු"))),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Send offer", "පිරිනැමුම යවන්න"))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Send offer", "පිරිනැමුම යවන්න", "சலுகையை அனுப்பு"))),
         ],
       ),
     );
@@ -113,18 +113,18 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
     messageController.dispose();
     if (confirmed != true) return;
     if (qty == null || price == null || qty < 1 || price < 1) {
-      _toast(tr("Please enter a valid quantity and price.", "කරුණාකර වලංගු ප්‍රමාණයක් සහ මිලක් ඇතුළත් කරන්න."));
+      _toast(tr("Please enter a valid quantity and price.", "කරුණාකර වලංගු ප්‍රමාණයක් සහ මිලක් ඇතුළත් කරන්න.", "சரியான அளவையும் விலையையும் உள்ளிடுங்கள்."));
       return;
     }
 
     final result = await InsightsApi.makeOffer(requestId: "${request["_id"]}", quantityKg: qty, pricePerKg: price, message: message);
-    _toast(result["message"]?.toString() ?? tr("Something went wrong.", "යම්කිසි දෝෂයක් සිදු විය."));
+    _toast(result["message"]?.toString() ?? tr("Something went wrong.", "යම්කිසි දෝෂයක් සිදු විය.", "ஏதோ தவறு நடந்துவிட்டது."));
     _load();
   }
 
   Future<void> _withdraw(Map<String, dynamic> request, Map<String, dynamic> offer) async {
     final result = await InsightsApi.withdrawOffer("${request["_id"]}", "${offer["_id"]}");
-    _toast(result["message"]?.toString() ?? tr("Done.", "සම්පූර්ණයි."));
+    _toast(result["message"]?.toString() ?? tr("Done.", "සම්පූර්ණයි.", "முடிந்தது."));
     _load();
   }
 
@@ -140,19 +140,19 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
     switch (status) {
       case "accepted":
         color = AppColors.forest;
-        label = tr("Accepted", "පිළිගත්තා");
+        label = tr("Accepted", "පිළිගත්තා", "ஏற்கப்பட்டது");
         break;
       case "declined":
         color = AppColors.danger;
-        label = tr("Declined", "ප්‍රතික්ෂේප කළා");
+        label = tr("Declined", "ප්‍රතික්ෂේප කළා", "நிராகரிக்கப்பட்டது");
         break;
       case "withdrawn":
         color = AppColors.inkMuted;
-        label = tr("Withdrawn", "ඉවත් කළා");
+        label = tr("Withdrawn", "ඉවත් කළා", "திரும்பப் பெறப்பட்டது");
         break;
       default:
         color = AppColors.indigo;
-        label = tr("Offer sent", "පිරිනැමුම යවා ඇත");
+        label = tr("Offer sent", "පිරිනැමුම යවා ඇත", "சலுகை அனுப்பப்பட்டது");
     }
     final phone = offer["buyerPhone"];
     final acceptedKg = numOf(offer["acceptedKg"]);
@@ -170,27 +170,27 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
               StatusPill(label: label, color: color),
               const Spacer(),
               if (status == "offered")
-                TextButton(onPressed: () => _withdraw(request, offer), child: Text(tr("Withdraw", "ඉවත් කරන්න"), style: const TextStyle(fontSize: 12.5))),
+                TextButton(onPressed: () => _withdraw(request, offer), child: Text(tr("Withdraw", "ඉවත් කරන්න", "திரும்பப் பெறு"), style: const TextStyle(fontSize: 12.5))),
             ],
           ),
           Text(
             tr(
               "Your offer: ${priceText(numOf(offer["quantityKg"]))} kg at LKR ${priceText(numOf(offer["pricePerKg"]))}/kg",
-              "ඔබේ පිරිනැමුම: කි.ග්‍රෑ. ${priceText(numOf(offer["quantityKg"]))} @ LKR ${priceText(numOf(offer["pricePerKg"]))}/කි.ග්‍රෑ.",
+              "ඔබේ පිරිනැමුම: කි.ග්‍රෑ. ${priceText(numOf(offer["quantityKg"]))} @ LKR ${priceText(numOf(offer["pricePerKg"]))}/කි.ග්‍රෑ.", "உங்கள் சலுகை: ${priceText(numOf(offer["quantityKg"]))} கி.கி. — LKR ${priceText(numOf(offer["pricePerKg"]))}/கி.கி.",
             ),
             style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w600),
           ),
           if (status == "accepted") ...[
             const SizedBox(height: 4),
             Text(
-              tr("Accepted quantity: ${priceText(acceptedKg)} kg", "පිළිගත් ප්‍රමාණය: කි.ග්‍රෑ. ${priceText(acceptedKg)}"),
+              tr("Accepted quantity: ${priceText(acceptedKg)} kg", "පිළිගත් ප්‍රමාණය: කි.ග්‍රෑ. ${priceText(acceptedKg)}", "ஏற்கப்பட்ட அளவு: ${priceText(acceptedKg)} கி.கி."),
               style: const TextStyle(fontSize: 12.5),
             ),
             if (phone != null && "$phone".isNotEmpty)
               TextButton.icon(
                 onPressed: () => _call("$phone"),
                 icon: const Icon(Icons.call_rounded, size: 16),
-                label: Text("${tr("Call buyer", "ගැනුම්කරුට අමතන්න")}: $phone"),
+                label: Text("${tr("Call buyer", "ගැනුම්කරුට අමතන්න", "வாங்குபவரை அழை")}: $phone"),
               ),
           ],
         ],
@@ -231,7 +231,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                     const SizedBox(height: 2),
                     Text("${request["buyerName"]}", style: TextStyle(fontSize: 12.5, color: mutedOf(context))),
                     Text(
-                      district.isEmpty ? tr("Any district", "ඕනෑම දිස්ත්‍රික්කයක්") : district,
+                      district.isEmpty ? tr("Any district", "ඕනෑම දිස්ත්‍රික්කයක්", "எந்த மாவட்டமும்") : district,
                       style: TextStyle(fontSize: 12, color: mutedOf(context)),
                     ),
                   ],
@@ -240,7 +240,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
               Column(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  Text(tr("up to", "උපරිම"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
+                  Text(tr("up to", "උපරිම", "அதிகபட்சம்"), style: TextStyle(fontSize: 10.5, color: mutedOf(context))),
                   Text("LKR ${priceText(numOf(request["maxPricePerKg"]))}", style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w800, color: AppColors.forest)),
                   Text("/kg", style: TextStyle(fontSize: 11, color: mutedOf(context))),
                 ],
@@ -253,18 +253,18 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
             runSpacing: 6,
             children: [
               StatusPill(
-                label: tr("${priceText(numOf(request["remainingKg"]))} kg needed", "කි.ග්‍රෑ. ${priceText(numOf(request["remainingKg"]))} අවශ්‍යයි"),
+                label: tr("${priceText(numOf(request["remainingKg"]))} kg needed", "කි.ග්‍රෑ. ${priceText(numOf(request["remainingKg"]))} අවශ්‍යයි", "${priceText(numOf(request["remainingKg"]))} கி.கி. தேவை"),
                 color: AppColors.forest,
                 icon: Icons.inventory_2_outlined,
               ),
               if (needed != null)
                 StatusPill(
-                  label: "${tr("By", "දිනට")} ${DateFormat("d MMM").format(needed.toLocal())}",
+                  label: "${tr("By", "දිනට", "தேதிக்குள்")} ${DateFormat("d MMM").format(needed.toLocal())}",
                   color: AppColors.gold,
                   icon: Icons.event_rounded,
                 ),
               StatusPill(
-                label: tr("$offersCount offer${offersCount == 1 ? "" : "s"}", "පිරිනැමුම් $offersCount"),
+                label: tr("$offersCount offer${offersCount == 1 ? "" : "s"}", "පිරිනැමුම් $offersCount", "சலுகைகள்: $offersCount"),
                 color: AppColors.inkMuted,
               ),
             ],
@@ -281,7 +281,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
               child: ElevatedButton.icon(
                 onPressed: () => _offer(request),
                 icon: const Icon(Icons.send_rounded, size: 16),
-                label: Text(tr("Make an offer", "පිරිනැමුමක් යවන්න")),
+                label: Text(tr("Make an offer", "පිරිනැමුමක් යවන්න", "சலுகை அனுப்பு")),
               ),
             ),
           ],
@@ -306,7 +306,7 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
                 color: AppColors.indigo,
                 text: tr(
                   "Buyers post what they need. Offer before you harvest — and use it to decide what to plant next.",
-                  "ගැනුම්කරුවන් තමන්ට අවශ්‍ය දේ පළ කරයි. අස්වැන්න නෙළීමට පෙර පිරිනමන්න — ඊළඟට වගා කළ යුතු දේ තීරණය කිරීමටත් මෙය භාවිත කරන්න.",
+                  "ගැනුම්කරුවන් තමන්ට අවශ්‍ය දේ පළ කරයි. අස්වැන්න නෙළීමට පෙර පිරිනමන්න — ඊළඟට වගා කළ යුතු දේ තීරණය කිරීමටත් මෙය භාවිත කරන්න.", "வாங்குபவர்கள் தங்களுக்குத் தேவையானதை இடுகையிடுகிறார்கள். அறுவடைக்கு முன்பே சலுகை அனுப்புங்கள் — அடுத்து என்ன பயிரிடுவது என்று முடிவெடுக்கவும் இதைப் பயன்படுத்துங்கள்.",
                 ),
               ),
               if (_loading)
@@ -314,8 +314,8 @@ class _DemandBoardScreenState extends State<DemandBoardScreen> {
               else if (_requests.isEmpty)
                 EmptyState(
                   icon: Icons.campaign_outlined,
-                  title: tr("No open buyer requests", "විවෘත ගැනුම්කරු ඉල්ලීම් නැත"),
-                  subtitle: tr("New requests from buyers will appear here.", "ගැනුම්කරුවන්ගේ නව ඉල්ලීම් මෙහි පෙන්වයි."),
+                  title: tr("No open buyer requests", "විවෘත ගැනුම්කරු ඉල්ලීම් නැත", "திறந்த வாங்குபவர் கோரிக்கைகள் இல்லை"),
+                  subtitle: tr("New requests from buyers will appear here.", "ගැනුම්කරුවන්ගේ නව ඉල්ලීම් මෙහි පෙන්වයි.", "வாங்குபவர்களின் புதிய கோரிக்கைகள் இங்கே தோன்றும்."),
                 )
               else
                 ..._requests.map(_card),

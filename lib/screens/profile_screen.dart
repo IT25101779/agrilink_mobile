@@ -172,9 +172,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
                             ListTile(
                               leading: const Icon(Icons.translate_rounded),
                               title: Text(t("language")),
-                              trailing: TextButton(
-                                onPressed: () => AppLocale.instance.setLanguage(AppLocale.instance.languageCode == "en" ? "si" : "en"),
-                                child: Text(AppLocale.instance.languageCode == "en" ? "English" : "සිංහල"),
+                              trailing: SegmentedButton<String>(
+                                showSelectedIcon: false,
+                                style: const ButtonStyle(visualDensity: VisualDensity.compact),
+                                segments: AppLocale.supportedCodes
+                                    .map((code) => ButtonSegment<String>(value: code, label: Text(AppLocale.languageNames[code] ?? code, style: const TextStyle(fontSize: 12))))
+                                    .toList(),
+                                selected: {AppLocale.instance.languageCode},
+                                onSelectionChanged: (selection) => AppLocale.instance.setLanguage(selection.first),
                               ),
                             ),
                           ],
@@ -230,10 +235,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Text(tr("Farm Passport", "ගොවි පාස්පෝට්"), style: const TextStyle(color: Colors.white, fontSize: 15.5, fontWeight: FontWeight.w800)),
+                    Text(tr("Farm Passport", "ගොවි පාස්පෝට්", "பண்ணை பாஸ்போர்ட்"), style: const TextStyle(color: Colors.white, fontSize: 15.5, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text(
-                      tr("Share your track record with lenders and investors", "ණය දෙන්නන් සහ ආයෝජකයන් සමඟ ඔබේ වාර්තාව බෙදාගන්න"),
+                      tr("Share your track record with lenders and investors", "ණය දෙන්නන් සහ ආයෝජකයන් සමඟ ඔබේ වාර්තාව බෙදාගන්න", "கடன் வழங்குவோர் மற்றும் முதலீட்டாளர்களுடன் உங்கள் சாதனைப் பதிவைப் பகிருங்கள்"),
                       style: const TextStyle(color: Colors.white70, fontSize: 12, height: 1.3),
                     ),
                   ],

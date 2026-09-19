@@ -49,15 +49,15 @@ class _MyListingCardState extends State<MyListingCard> {
     switch (label) {
       case "not_harvested":
         final days = (fresh["daysUntilHarvest"] as num?)?.toInt() ?? 0;
-        return tr("Harvest in $days day${days == 1 ? "" : "s"}", "දින $days කින් අස්වැන්න");
+        return tr("Harvest in $days day${days == 1 ? "" : "s"}", "දින $days කින් අස්වැන්න", "$days நாட்களில் அறுவடை");
       case "fresh":
-        return tr("Fresh · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "නැවුම් · දින $daysLeft ක් ඉතිරියි");
+        return tr("Fresh · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "නැවුම් · දින $daysLeft ක් ඉතිරියි", "புதியது · $daysLeft நாட்கள் மீதம்");
       case "aging":
-        return tr("Ageing · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "පරණ වෙමින් · දින $daysLeft ක් ඉතිරියි");
+        return tr("Ageing · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "පරණ වෙමින් · දින $daysLeft ක් ඉතිරියි", "பழையதாகிறது · $daysLeft நாட்கள் மீதம்");
       case "urgent":
-        return tr("Sell soon · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "ඉක්මනින් විකුණන්න · දින $daysLeft ක් ඉතිරියි");
+        return tr("Sell soon · $daysLeft day${daysLeft == 1 ? "" : "s"} left", "ඉක්මනින් විකුණන්න · දින $daysLeft ක් ඉතිරියි", "விரைவில் விற்கவும் · $daysLeft நாட்கள் மீதம்");
       default:
-        return tr("Freshness window ended", "නැවුම්බව කාලය අවසන්");
+        return tr("Freshness window ended", "නැවුම්බව කාලය අවසන්", "புத்துணர்ச்சி காலம் முடிந்தது");
     }
   }
 
@@ -95,15 +95,15 @@ class _MyListingCardState extends State<MyListingCard> {
   String _adviceTitle(String action) {
     switch (action) {
       case "sell_now":
-        return tr("SELL NOW", "දැන්ම විකුණන්න");
+        return tr("SELL NOW", "දැන්ම විකුණන්න", "இப்போதே விற்கவும்");
       case "hold":
-        return tr("HOLD", "රඳවා ගන්න");
+        return tr("HOLD", "රඳවා ගන්න", "காத்திருக்கவும்");
       case "reprice_up":
-        return tr("RAISE PRICE", "මිල ඉහළ දමන්න");
+        return tr("RAISE PRICE", "මිල ඉහළ දමන්න", "விலையை உயர்த்தவும்");
       case "reprice_down":
-        return tr("LOWER PRICE", "මිල අඩු කරන්න");
+        return tr("LOWER PRICE", "මිල අඩු කරන්න", "விலையைக் குறைக்கவும்");
       default:
-        return tr("ALL GOOD", "සියල්ල හොඳයි");
+        return tr("ALL GOOD", "සියල්ල හොඳයි", "எல்லாம் நன்று");
     }
   }
 
@@ -130,7 +130,7 @@ class _MyListingCardState extends State<MyListingCard> {
                 InkWell(
                   onTap: () => setState(() => _showWhy = !_showWhy),
                   child: Text(
-                    _showWhy ? tr("Hide", "සඟවන්න") : tr("Why?", "ඇයි?"),
+                    _showWhy ? tr("Hide", "සඟවන්න", "மறை") : tr("Why?", "ඇයි?", "ஏன்?"),
                     style: TextStyle(fontSize: 11.5, fontWeight: FontWeight.w700, color: color),
                   ),
                 ),
@@ -180,15 +180,15 @@ class _MyListingCardState extends State<MyListingCard> {
     switch (status) {
       case "listed":
         statusColor = AppColors.forest;
-        statusLabel = tr("Live", "සජීවී");
+        statusLabel = tr("Live", "සජීවී", "செயலில்");
         break;
       case "reserved":
         statusColor = AppColors.gold;
-        statusLabel = tr("Reserved", "වෙන් කර ඇත");
+        statusLabel = tr("Reserved", "වෙන් කර ඇත", "ஒதுக்கப்பட்டது");
         break;
       case "sold":
         statusColor = AppColors.inkMuted;
-        statusLabel = tr("Sold", "විකුණා ඇත");
+        statusLabel = tr("Sold", "විකුණා ඇත", "விற்கப்பட்டது");
         break;
       default:
         statusColor = AppColors.inkMuted;
@@ -219,7 +219,7 @@ class _MyListingCardState extends State<MyListingCard> {
                     Text(cropName, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text(
-                      "${priceText(numOf(listing["quantityKg"]))} kg · ${tr("Grade", "ශ්‍රේණිය")} ${listing["qualityGrade"] ?? "A"}",
+                      "${priceText(numOf(listing["quantityKg"]))} kg · ${tr("Grade", "ශ්‍රේණිය", "தரம்")} ${listing["qualityGrade"] ?? "A"}",
                       style: TextStyle(fontSize: 12.5, color: mutedOf(context)),
                     ),
                     const SizedBox(height: 8),
@@ -229,7 +229,7 @@ class _MyListingCardState extends State<MyListingCard> {
                       children: [
                         StatusPill(label: statusLabel, color: statusColor),
                         if (tier == "secondary")
-                          StatusPill(label: tr("Flash sale", "දැන්වීම් වට්ටම්"), color: AppColors.gold, icon: Icons.local_offer_rounded),
+                          StatusPill(label: tr("Flash sale", "දැන්වීම් වට්ටම්", "அதிரடி விற்பனை"), color: AppColors.gold, icon: Icons.local_offer_rounded),
                       ],
                     ),
                   ],
@@ -273,7 +273,7 @@ class _MyListingCardState extends State<MyListingCard> {
             if (priceDropped) ...[
               const SizedBox(height: 6),
               Text(
-                tr("The price eases down a little each day as freshness runs out.", "නැවුම්බව අඩු වන විට මිල දිනපතා ටිකෙන් ටික අඩු වේ."),
+                tr("The price eases down a little each day as freshness runs out.", "නැවුම්බව අඩු වන විට මිල දිනපතා ටිකෙන් ටික අඩු වේ.", "புத்துணர்ச்சி குறையும்போது விலை தினமும் சிறிது சிறிதாகக் குறையும்."),
                 style: TextStyle(fontSize: 11, color: mutedOf(context)),
               ),
             ],

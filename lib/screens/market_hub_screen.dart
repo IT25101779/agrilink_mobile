@@ -73,9 +73,9 @@ class _MarketHubScreenState extends State<MarketHubScreen> {
               ),
               child: Row(
                 children: [
-                  _segment(0, Icons.sell_rounded, tr("Sell", "විකුණන්න")),
-                  _segment(1, Icons.groups_rounded, tr("Group Lots", "කණ්ඩායම්")),
-                  _segment(2, Icons.campaign_rounded, tr("Requests", "ඉල්ලීම්")),
+                  _segment(0, Icons.sell_rounded, tr("Sell", "විකුණන්න", "விற்பனை")),
+                  _segment(1, Icons.groups_rounded, tr("Group Lots", "කණ්ඩායම්", "குழுத் தொகுப்புகள்")),
+                  _segment(2, Icons.campaign_rounded, tr("Requests", "ඉල්ලීම්", "கோரிக்கைகள்")),
                 ],
               ),
             ),

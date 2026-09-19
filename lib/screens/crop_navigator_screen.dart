@@ -9,6 +9,7 @@ import '../services/climate_zone_service.dart';
 import '../services/soil_type_service.dart';
 import '../services/insights_api.dart';
 import '../localization/tr.dart';
+import '../localization/crop_names.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/profit_planner_sheet.dart';
 import '../localization/app_locale.dart';
@@ -105,22 +106,22 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
 
     if (_signalsEnoughData && level == "high") {
       pills.add(StatusPill(
-        label: tr("Crowded: $farmers farmers growing", "අධික සැපයුම: ගොවීන් $farmers දෙනෙක් වගා කරයි"),
+        label: tr("Crowded: $farmers farmers growing", "අධික සැපයුම: ගොවීන් $farmers දෙනෙක් වගා කරයි", "நெரிசல்: $farmers விவசாயிகள் பயிரிடுகின்றனர்"),
         color: AppColors.danger,
         icon: Icons.warning_amber_rounded,
       ));
     } else if (_signalsEnoughData && level == "medium") {
       pills.add(StatusPill(
-        label: tr("Getting busy: $farmers farmers", "කාර්යබහුලයි: ගොවීන් $farmers"),
+        label: tr("Getting busy: $farmers farmers", "කාර්යබහුලයි: ගොවීන් $farmers", "பரபரப்பாகிறது: $farmers விவசாயிகள்"),
         color: AppColors.gold,
         icon: Icons.groups_rounded,
       ));
     } else if (_signalsEnoughData) {
-      pills.add(StatusPill(label: tr("Room in the market", "වෙළඳපොළේ ඉඩ ඇත"), color: AppColors.forest, icon: Icons.check_rounded));
+      pills.add(StatusPill(label: tr("Room in the market", "වෙළඳපොළේ ඉඩ ඇත", "சந்தையில் இடம் உள்ளது"), color: AppColors.forest, icon: Icons.check_rounded));
     }
     if (demand != null) {
       pills.add(StatusPill(
-        label: tr("Buyers need ${priceText(numOf(demand["totalKg"]))} kg", "ගැනුම්කරුවන්ට කි.ග්‍රෑ. ${priceText(numOf(demand["totalKg"]))} ක් අවශ්‍යයි"),
+        label: tr("Buyers need ${priceText(numOf(demand["totalKg"]))} kg", "ගැනුම්කරුවන්ට කි.ග්‍රෑ. ${priceText(numOf(demand["totalKg"]))} ක් අවශ්‍යයි", "வாங்குபவர்களுக்கு ${priceText(numOf(demand["totalKg"]))} கி.கி. தேவை"),
         color: AppColors.indigo,
         icon: Icons.campaign_rounded,
       ));
@@ -157,7 +158,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
           children: [
             const Icon(Icons.warning_amber_rounded, color: AppColors.danger),
             const SizedBox(width: 8),
-            Expanded(child: Text(tr("Many neighbours grow this", "බොහෝ අසල්වැසියන් මෙය වගා කරයි"), style: const TextStyle(fontSize: 17))),
+            Expanded(child: Text(tr("Many neighbours grow this", "බොහෝ අසල්වැසියන් මෙය වගා කරයි", "பல அண்டை விவசாயிகள் இதைப் பயிரிடுகின்றனர்"), style: const TextStyle(fontSize: 17))),
           ],
         ),
         content: SingleChildScrollView(
@@ -168,20 +169,20 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
               Text(
                 tr(
                   "$farmers farmers in ${_district ?? "your district"} are already growing ${crop.name} (${share.toStringAsFixed(0)}% of all crops there). If they harvest together, prices can fall.",
-                  "${_district ?? "ඔබේ දිස්ත්‍රික්කයේ"} ගොවීන් $farmers දෙනෙක් දැනටමත් ${crop.name} වගා කරයි (එහි මුළු බෝග වලින් ${share.toStringAsFixed(0)}%). ඔවුන් එකවර අස්වැන්න නෙළුවොත් මිල පහත වැටිය හැක.",
+                  "${_district ?? "ඔබේ දිස්ත්‍රික්කයේ"} ගොවීන් $farmers දෙනෙක් දැනටමත් ${crop.name} වගා කරයි (එහි මුළු බෝග වලින් ${share.toStringAsFixed(0)}%). ඔවුන් එකවර අස්වැන්න නෙළුවොත් මිල පහත වැටිය හැක.", "${_district ?? "உங்கள் மாவட்டத்தில்"} $farmers விவசாயிகள் ஏற்கனவே ${crop.name} பயிரிடுகின்றனர் (அங்குள்ள அனைத்துப் பயிர்களில் ${share.toStringAsFixed(0)}%). அவர்கள் ஒன்றாக அறுவடை செய்தால் விலை குறையலாம்.",
                 ),
                 style: const TextStyle(fontSize: 13.5, height: 1.4),
               ),
               if (top.isNotEmpty) ...[
                 const SizedBox(height: 14),
-                Text(tr("Less crowded options for you:", "ඔබට අඩු තදබදයක් ඇති විකල්ප:"), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(tr("Less crowded options for you:", "ඔබට අඩු තදබදයක් ඇති විකල්ප:", "உங்களுக்கான குறைந்த நெரிசல் விருப்பங்கள்:"), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                 const SizedBox(height: 6),
                 ...top.map((c) {
                   final d = _demandFor(c);
                   return Padding(
                     padding: const EdgeInsets.only(bottom: 4),
                     child: Text(
-                      "• ${c.name}${d != null ? "  (${tr("buyers need", "ගැනුම්කරුවන්ට අවශ්‍යයි")} ${priceText(numOf(d["totalKg"]))} kg)" : ""}",
+                      "• ${c.name}${d != null ? "  (${tr("buyers need", "ගැනුම්කරුවන්ට අවශ්‍යයි", "வாங்குபவர்களுக்குத் தேவை")} ${priceText(numOf(d["totalKg"]))} kg)" : ""}",
                       style: const TextStyle(fontSize: 13),
                     ),
                   );
@@ -191,11 +192,11 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Choose another", "වෙනත් එකක් තෝරන්න"))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Choose another", "වෙනත් එකක් තෝරන්න", "வேறொன்றைத் தேர்ந்தெடுங்கள்"))),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.danger),
             onPressed: () => Navigator.pop(context, true),
-            child: Text(tr("Start anyway", "කෙසේ වෙතත් අරඹන්න")),
+            child: Text(tr("Start anyway", "කෙසේ වෙතත් අරඹන්න", "எப்படியும் தொடங்கு")),
           ),
         ],
       ),
@@ -220,7 +221,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
               const Icon(Icons.shield_moon_rounded, size: 18, color: AppColors.forest),
               const SizedBox(width: 6),
               Expanded(
-                child: Text(tr("Oversupply Guard · $_district", "අධි සැපයුම් ආරක්ෂකය · $_district"), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
+                child: Text(tr("Oversupply Guard · $_district", "අධි සැපයුම් ආරක්ෂකය · $_district", "அதிக விநியோகக் காவலர் · $_district"), style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
               ),
             ],
           ),
@@ -229,26 +230,26 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
             Text(
               tr(
                 "Not enough farmers here have shared their crops yet ($_signalsTotalPlantings so far). This will fill in as more farmers use the app.",
-                "මෙහි ගොවීන් තවම ප්‍රමාණවත් තරම් තම බෝග බෙදාගෙන නැත (මෙතෙක් $_signalsTotalPlantings). වැඩි ගොවීන් යෙදුම භාවිත කරන විට මෙය පිරෙනු ඇත.",
+                "මෙහි ගොවීන් තවම ප්‍රමාණවත් තරම් තම බෝග බෙදාගෙන නැත (මෙතෙක් $_signalsTotalPlantings). වැඩි ගොවීන් යෙදුම භාවිත කරන විට මෙය පිරෙනු ඇත.", "இங்கு போதுமான விவசாயிகள் இன்னும் தங்கள் பயிர்களைப் பகிரவில்லை (இதுவரை $_signalsTotalPlantings). மேலும் விவசாயிகள் செயலியைப் பயன்படுத்தும்போது இது நிரம்பும்.",
               ),
               style: TextStyle(fontSize: 12.5, color: mutedOf(context), height: 1.4),
             )
           else ...[
             Text(
-              tr("What farmers near you are growing right now:", "ඔබ අසල ගොවීන් දැන් වගා කරන දේ:"),
+              tr("What farmers near you are growing right now:", "ඔබ අසල ගොවීන් දැන් වගා කරන දේ:", "உங்கள் அருகிலுள்ள விவசாயிகள் இப்போது பயிரிடுபவை:"),
               style: TextStyle(fontSize: 12.5, color: mutedOf(context)),
             ),
             const SizedBox(height: 8),
             ...top.map((c) {
               final level = "${c["level"]}";
               final color = level == "high" ? AppColors.danger : level == "medium" ? AppColors.gold : AppColors.forest;
-              final label = level == "high" ? tr("Crowded", "තදබදයි") : level == "medium" ? tr("Busy", "කාර්යබහුලයි") : tr("OK", "හොඳයි");
+              final label = level == "high" ? tr("Crowded", "තදබදයි", "நெரிசல்") : level == "medium" ? tr("Busy", "කාර්යබහුලයි", "பரபரப்பு") : tr("OK", "හොඳයි", "சரி");
               return Padding(
                 padding: const EdgeInsets.only(bottom: 6),
                 child: Row(
                   children: [
                     Expanded(child: Text("${c["cropType"]}", style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600))),
-                    Text(tr("${c["farmers"]} farmers", "ගොවීන් ${c["farmers"]}"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
+                    Text(tr("${c["farmers"]} farmers", "ගොවීන් ${c["farmers"]}", "விவசாயிகள் ${c["farmers"]}"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
                     const SizedBox(width: 8),
                     StatusPill(label: label, color: color),
                   ],
@@ -258,7 +259,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
           ],
           const SizedBox(height: 4),
           Text(
-            tr("Only anonymous counts are shown. No farmer's name or land is shared.", "පෙන්වන්නේ නිර්නාමික ගණන් පමණි. කිසිදු ගොවියෙකුගේ නමක් හෝ ඉඩමක් බෙදා නොගනී."),
+            tr("Only anonymous counts are shown. No farmer's name or land is shared.", "පෙන්වන්නේ නිර්නාමික ගණන් පමණි. කිසිදු ගොවියෙකුගේ නමක් හෝ ඉඩමක් බෙදා නොගනී.", "பெயர் குறிப்பிடாத எண்ணிக்கைகள் மட்டுமே காட்டப்படும். எந்த விவசாயியின் பெயரோ நிலமோ பகிரப்படாது."),
             style: TextStyle(fontSize: 11, color: mutedOf(context)),
           ),
         ],
@@ -397,7 +398,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
                 onChanged: (value) => setState(() => _soilType = value ?? "loamy"),
               ),
               const SizedBox(height: 16),
-              Text("Category", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.inkMuted)),
+              Text(tr("Category", "ප්‍රවර්ගය", "வகை"), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13, color: AppColors.inkMuted)),
               const SizedBox(height: 8),
               SizedBox(
                 height: 36,
@@ -421,10 +422,10 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
               ),
               const SizedBox(height: 20),
               if (_hasSearched && _recommendations.isEmpty)
-                const Padding(
+                Padding(
                   padding: EdgeInsets.symmetric(vertical: 20),
                   child: Center(
-                    child: Text("No crops match this combination. Try a different category or soil type.", style: TextStyle(color: AppColors.inkMuted)),
+                    child: Text(tr("No crops match this combination. Try a different category or soil type.", "මෙම සංයෝජනයට ගැළපෙන බෝග නැත. වෙනත් ප්‍රවර්ගයක් හෝ පස වර්ගයක් උත්සාහ කරන්න.", "இந்தக் கலவைக்குப் பொருந்தும் பயிர்கள் இல்லை. வேறு வகை அல்லது மண் வகையை முயற்சிக்கவும்."), style: TextStyle(color: AppColors.inkMuted)),
                   ),
                 ),
               if (_recommendations.isNotEmpty) ...[
@@ -437,7 +438,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
                     child: ListTile(
                       isThreeLine: true,
                       leading: CropThumbnail(wikiImageTitle: crop.wikiImageTitle, size: 44),
-                      title: Text("${crop.name}  ·  ${crop.nameSi}", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                      title: Text(cropBilingualTitle(crop), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                       subtitle: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -453,7 +454,7 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
                             TextButton.icon(
                               onPressed: () => _openProfitPlan(crop),
                               icon: const Icon(Icons.calculate_rounded, size: 16),
-                              label: Text(tr("Profit estimate", "ලාභ ඇස්තමේන්තුව"), style: const TextStyle(fontSize: 12.5)),
+                              label: Text(tr("Profit estimate", "ලාභ ඇස්තමේන්තුව", "லாப மதிப்பீடு"), style: const TextStyle(fontSize: 12.5)),
                               style: TextButton.styleFrom(
                                 padding: EdgeInsets.zero,
                                 minimumSize: const Size(0, 32),

@@ -4,6 +4,7 @@ import '../services/auth_service.dart';
 import '../services/voice_service.dart';
 import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
+import '../localization/tr.dart';
 
 class ChatMessage {
   final String role; // "user" or "assistant"
@@ -93,7 +94,7 @@ class _ChatScreenState extends State<ChatScreen> {
     if (!started) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Voice input isn't available on this device/browser. Please type instead.")),
+          SnackBar(content: Text(tr("Voice input isn't available on this device/browser. Please type instead.", "මෙම උපාංගයේ හඬ ආදානය ලබා ගත නොහැක. කරුණාකර ටයිප් කරන්න.", "இந்த சாதனத்தில் குரல் உள்ளீடு கிடைக்கவில்லை. தயவுசெய்து தட்டச்சு செய்யுங்கள்."))),
         );
       }
       return;
@@ -149,24 +150,23 @@ class _ChatScreenState extends State<ChatScreen> {
       listenable: AppLocale.instance,
       builder: (context, _) {
         final t = AppLocale.instance.t;
-        final isEnglish = AppLocale.instance.languageCode == "en";
 
         return Scaffold(
           appBar: AppBar(
             title: Text(t("agriAssistant")),
             actions: [
               GestureDetector(
-                onTap: () => AppLocale.instance.setLanguage(isEnglish ? "si" : "en"),
+                onTap: () => AppLocale.instance.cycleLanguage(),
                 child: Container(
                   margin: const EdgeInsets.only(right: 4),
                   padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
                   decoration: BoxDecoration(color: Colors.white.withOpacity(0.15), borderRadius: BorderRadius.circular(20)),
-                  child: Text(isEnglish ? "EN" : "සිං", style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
+                  child: Text(AppLocale.languageShort[AppLocale.instance.languageCode] ?? "EN", style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.w700)),
                 ),
               ),
               IconButton(
                 icon: Icon(_autoReadReplies ? Icons.volume_up_rounded : Icons.volume_off_rounded, size: 21),
-                tooltip: "Auto read-aloud replies",
+                tooltip: tr("Auto read-aloud replies", "පිළිතුරු ස්වයංක්‍රීයව කියවන්න", "பதில்களைத் தானாக உரக்கப் படி"),
                 onPressed: () => setState(() => _autoReadReplies = !_autoReadReplies),
               ),
             ],

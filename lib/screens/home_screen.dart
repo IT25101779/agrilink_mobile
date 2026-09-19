@@ -20,6 +20,8 @@ import '../widgets/floating_nav_bar.dart';
 import '../widgets/language_toggle.dart';
 import '../widgets/theme_toggle.dart';
 import 'profile_screen.dart';
+import '../localization/tr.dart';
+import 'chat_hub_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -39,6 +41,7 @@ class _HomeScreenState extends State<HomeScreen> {
     DiseaseScannerScreen(),
     LogisticsScreen(),
     MarketHubScreen(),
+    ChatHubScreen(),
   ];
 
   @override
@@ -88,13 +91,14 @@ class _HomeScreenState extends State<HomeScreen> {
       listenable: AppLocale.instance,
       builder: (context, _) {
         final t = AppLocale.instance.t;
-        final titles = [t("myTimelines"), t("cropNavigator"), t("diseaseScanner"), t("logistics"), t("marketplace")];
+        final titles = [t("myTimelines"), t("cropNavigator"), t("diseaseScanner"), t("logistics"), t("marketplace"), tr("Community", "ප්‍රජාව", "சமூகம்")];
         final navItems = [
           NavItem(Icons.checklist_rounded, t("timelines")),
           NavItem(Icons.explore_rounded, t("navigator")),
           NavItem(Icons.biotech_rounded, t("scanner")),
           NavItem(Icons.local_shipping_rounded, t("logistics")),
           NavItem(Icons.storefront_rounded, t("market")),
+          NavItem(Icons.forum_rounded, tr("Community", "ප්‍රජාව", "சமூகம்")),
         ];
 
         return Scaffold(
@@ -109,7 +113,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   IconButton(
                     icon: const Icon(Icons.notifications_rounded),
-                    tooltip: "Reminders",
+                    tooltip: tr("Reminders", "මතක් කිරීම්", "நினைவூட்டல்கள்"),
                     onPressed: () => Navigator.push(context, SmoothRoute(page: const RemindersScreen())).then((_) => _refreshReminders()),
                   ),
                   if (_pendingReminderCount > 0)
@@ -144,7 +148,7 @@ class _HomeScreenState extends State<HomeScreen> {
           floatingActionButton: Padding(
             padding: const EdgeInsets.only(bottom: 74),
             child: FloatingActionButton(
-              tooltip: "Ask the Agri Assistant",
+              tooltip: tr("Ask the Agri Assistant", "කෘෂි සහායකයාගෙන් අහන්න", "விவசாய உதவியாளரிடம் கேளுங்கள்"),
               backgroundColor: AppColors.gold,
               onPressed: () => Navigator.push(context, SmoothRoute(page: const ChatScreen())),
               child: const Icon(Icons.chat_bubble_rounded, color: Colors.white),

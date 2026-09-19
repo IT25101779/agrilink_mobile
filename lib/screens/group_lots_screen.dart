@@ -62,26 +62,26 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: Text(lot["isMember"] == true ? tr("Add more to this lot", "මෙම ලොට් එකට තවත් එක් කරන්න") : tr("Join this lot", "මෙම ලොට් එකට එක්වන්න")),
+        title: Text(lot["isMember"] == true ? tr("Add more to this lot", "මෙම ලොට් එකට තවත් එක් කරන්න", "இந்தத் தொகுப்பில் மேலும் சேர்") : tr("Join this lot", "මෙම ලොට් එකට එක්වන්න", "இந்தத் தொகுப்பில் சேர்")),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(
-              tr("${priceText(remaining)} kg of ${lot["cropType"]} is still needed.", "${lot["cropType"]} කි.ග්‍රෑ. ${priceText(remaining)} ක් තවම අවශ්‍යයි."),
+              tr("${priceText(remaining)} kg of ${lot["cropType"]} is still needed.", "${lot["cropType"]} කි.ග්‍රෑ. ${priceText(remaining)} ක් තවම අවශ්‍යයි.", "${lot["cropType"]} இன் ${priceText(remaining)} கி.கி. இன்னும் தேவை."),
               style: const TextStyle(fontSize: 13),
             ),
             const SizedBox(height: 12),
             TextField(
               controller: controller,
               keyboardType: TextInputType.number,
-              decoration: InputDecoration(labelText: tr("Your quantity (kg)", "ඔබේ ප්‍රමාණය (කි.ග්‍රෑ.)"), border: const OutlineInputBorder()),
+              decoration: InputDecoration(labelText: tr("Your quantity (kg)", "ඔබේ ප්‍රමාණය (කි.ග්‍රෑ.)", "உங்கள் அளவு (கி.கி.)"), border: const OutlineInputBorder()),
             ),
           ],
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු"))),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Join", "එක්වන්න"))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Join", "එක්වන්න", "சேர்"))),
         ],
       ),
     );
@@ -90,7 +90,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
     if (confirmed != true || quantity == null || quantity < 1) return;
 
     final result = await InsightsApi.joinLot("${lot["_id"]}", quantity);
-    _toast(result["message"]?.toString() ?? tr("Something went wrong.", "යම්කිසි දෝෂයක් සිදු විය."));
+    _toast(result["message"]?.toString() ?? tr("Something went wrong.", "යම්කිසි දෝෂයක් සිදු විය.", "ஏதோ தவறு நடந்துவிட்டது."));
     _load();
   }
 
@@ -102,14 +102,14 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
         title: Text(title),
         content: Text(body),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Back", "ආපසු"))),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Yes", "ඔව්"))),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Back", "ආපසු", "பின்செல்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Yes", "ඔව්", "ஆம்"))),
         ],
       ),
     );
     if (ok != true) return;
     final result = await action();
-    _toast(result["message"]?.toString() ?? tr("Done.", "සම්පූර්ණයි."));
+    _toast(result["message"]?.toString() ?? tr("Done.", "සම්පූර්ණයි.", "முடிந்தது."));
     _load();
   }
 
@@ -121,7 +121,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
       builder: (context) => const _CreateLotSheet(),
     );
     if (created == true) {
-      _toast(tr("Group lot created. Neighbours can now join it.", "කණ්ඩායම් ලොට් එක සාදන ලදී. අසල්වැසියන්ට දැන් එක්විය හැක."));
+      _toast(tr("Group lot created. Neighbours can now join it.", "කණ්ඩායම් ලොට් එක සාදන ලදී. අසල්වැසියන්ට දැන් එක්විය හැක.", "குழுத் தொகுப்பு உருவாக்கப்பட்டது. அண்டை விவசாயிகள் இப்போது சேரலாம்."));
       _load();
     }
   }
@@ -154,19 +154,19 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
     switch (status) {
       case "open":
         statusColor = AppColors.forest;
-        statusLabel = tr("Open", "විවෘතයි");
+        statusLabel = tr("Open", "විවෘතයි", "திறந்துள்ளது");
         break;
       case "full":
         statusColor = AppColors.gold;
-        statusLabel = tr("Full · waiting for a buyer", "පිරී ඇත · ගැනුම්කරුවෙකු බලාපොරොත්තුවෙන්");
+        statusLabel = tr("Full · waiting for a buyer", "පිරී ඇත · ගැනුම්කරුවෙකු බලාපොරොත්තුවෙන්", "நிறைந்துவிட்டது · வாங்குபவருக்காகக் காத்திருக்கிறது");
         break;
       case "claimed":
         statusColor = AppColors.indigo;
-        statusLabel = tr("Claimed by a buyer", "ගැනුම්කරුවෙකු ගෙන ඇත");
+        statusLabel = tr("Claimed by a buyer", "ගැනුම්කරුවෙකු ගෙන ඇත", "வாங்குபவர் எடுத்துக்கொண்டார்");
         break;
       default:
         statusColor = AppColors.inkMuted;
-        statusLabel = status == "expired" ? tr("Expired", "කල් ඉකුත්") : tr("Cancelled", "අවලංගුයි");
+        statusLabel = status == "expired" ? tr("Expired", "කල් ඉකුත්", "காலாவதியானது") : tr("Cancelled", "අවලංගුයි", "ரத்து செய்யப்பட்டது");
     }
 
     return SoftCard(
@@ -193,7 +193,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
                     Text("${lot["cropType"]}", style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800)),
                     const SizedBox(height: 2),
                     Text(
-                      "${lot["district"]} · ${tr("organised by", "සංවිධායක")} ${lot["organizer"]}",
+                      "${lot["district"]} · ${tr("organised by", "සංවිධායක", "ஏற்பாடு செய்தவர்")} ${lot["organizer"]}",
                       style: TextStyle(fontSize: 12, color: mutedOf(context)),
                     ),
                     if (status == "open")
@@ -217,7 +217,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text("${priceText(committed)} / ${priceText(target)} kg", style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700)),
-              Text(tr("$memberCount farmer${memberCount == 1 ? "" : "s"}", "ගොවීන් $memberCount"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
+              Text(tr("$memberCount farmer${memberCount == 1 ? "" : "s"}", "ගොවීන් $memberCount", "விவசாயிகள்: $memberCount"), style: TextStyle(fontSize: 12, color: mutedOf(context))),
             ],
           ),
           const SizedBox(height: 8),
@@ -228,7 +228,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
               StatusPill(label: statusLabel, color: statusColor),
               if (isMember)
                 StatusPill(
-                  label: tr("You: ${priceText(numOf(lot["myQuantityKg"]))} kg", "ඔබ: ${priceText(numOf(lot["myQuantityKg"]))} කි.ග්‍රෑ."),
+                  label: tr("You: ${priceText(numOf(lot["myQuantityKg"]))} kg", "ඔබ: ${priceText(numOf(lot["myQuantityKg"]))} කි.ග්‍රෑ.", "நீங்கள்: ${priceText(numOf(lot["myQuantityKg"]))} கி.கி."),
                   color: AppColors.indigo,
                   icon: Icons.check_rounded,
                 ),
@@ -258,29 +258,29 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
                 Expanded(
                   child: ElevatedButton(
                     onPressed: () => _join(lot),
-                    child: Text(isMember ? tr("Add more", "තව එක් කරන්න") : tr("Join lot", "ලොට් එකට එක්වන්න")),
+                    child: Text(isMember ? tr("Add more", "තව එක් කරන්න", "மேலும் சேர்") : tr("Join lot", "ලොට් එකට එක්වන්න", "குழுவில் சேர்")),
                   ),
                 ),
                 if (isMember && !isOrganizer) ...[
                   const SizedBox(width: 8),
                   OutlinedButton(
                     onPressed: () => _confirmAndRun(
-                      tr("Leave this lot?", "මෙම ලොට් එකෙන් ඉවත් වන්නද?"),
-                      tr("Your kg will be removed from the lot.", "ඔබේ ප්‍රමාණය ලොට් එකෙන් ඉවත් කරනු ලැබේ."),
+                      tr("Leave this lot?", "මෙම ලොට් එකෙන් ඉවත් වන්නද?", "இந்தத் தொகுப்பிலிருந்து வெளியேறவா?"),
+                      tr("Your kg will be removed from the lot.", "ඔබේ ප්‍රමාණය ලොට් එකෙන් ඉවත් කරනු ලැබේ.", "உங்கள் அளவு தொகுப்பிலிருந்து நீக்கப்படும்."),
                       () => InsightsApi.leaveLot("${lot["_id"]}"),
                     ),
-                    child: Text(tr("Leave", "ඉවත් වන්න")),
+                    child: Text(tr("Leave", "ඉවත් වන්න", "வெளியேறு")),
                   ),
                 ],
                 if (isOrganizer && memberCount == 1) ...[
                   const SizedBox(width: 8),
                   OutlinedButton(
                     onPressed: () => _confirmAndRun(
-                      tr("Cancel this lot?", "මෙම ලොට් එක අවලංගු කරන්නද?"),
-                      tr("No one else has joined yet, so it will simply be removed.", "තවම කිසිවෙකු එක් වී නැති නිසා එය ඉවත් කරනු ලැබේ."),
+                      tr("Cancel this lot?", "මෙම ලොට් එක අවලංගු කරන්නද?", "இந்தத் தொகுப்பை ரத்து செய்யவா?"),
+                      tr("No one else has joined yet, so it will simply be removed.", "තවම කිසිවෙකු එක් වී නැති නිසා එය ඉවත් කරනු ලැබේ.", "இன்னும் யாரும் சேரவில்லை, எனவே இது நீக்கப்படும்."),
                       () => InsightsApi.cancelLot("${lot["_id"]}"),
                     ),
-                    child: Text(tr("Cancel", "අවලංගු")),
+                    child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்")),
                   ),
                 ],
               ],
@@ -306,7 +306,7 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
                 icon: Icons.groups_rounded,
                 text: tr(
                   "Only have a small harvest? Pool it with neighbours. Hotels and supermarkets buy whole lots, and you are paid for the kg you put in.",
-                  "අස්වැන්න අඩුද? අසල්වැසියන් සමඟ එකතු කරන්න. හෝටල් සහ සුපිරි වෙළඳසැල් සම්පූර්ණ ලොට් මිලදී ගන්නා අතර, ඔබ දුන් ප්‍රමාණයට ඔබට ගෙවනු ලැබේ.",
+                  "අස්වැන්න අඩුද? අසල්වැසියන් සමඟ එකතු කරන්න. හෝටල් සහ සුපිරි වෙළඳසැල් සම්පූර්ණ ලොට් මිලදී ගන්නා අතර, ඔබ දුන් ප්‍රමාණයට ඔබට ගෙවනු ලැබේ.", "அறுவடை குறைவாக உள்ளதா? அண்டை விவசாயிகளுடன் சேர்த்துக்கொள்ளுங்கள். ஹோட்டல்களும் பல்பொருள் அங்காடிகளும் முழுத் தொகுப்பையும் வாங்குகின்றன; நீங்கள் கொடுத்த கிலோவுக்கு உங்களுக்குப் பணம் கிடைக்கும்.",
                 ),
               ),
               SizedBox(
@@ -314,18 +314,18 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
                 child: ElevatedButton.icon(
                   onPressed: _openCreateSheet,
                   icon: const Icon(Icons.add_rounded),
-                  label: Text(tr("Start a group lot", "කණ්ඩායම් ලොට් එකක් අරඹන්න")),
+                  label: Text(tr("Start a group lot", "කණ්ඩායම් ලොට් එකක් අරඹන්න", "குழுத் தொகுப்பைத் தொடங்கு")),
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 13)),
                 ),
               ),
               const SizedBox(height: 12),
               Row(
                 children: [
-                  _chip(_district != null && _district!.isNotEmpty ? tr("Near me ($_district)", "මා අසල ($_district)") : tr("All lots", "සියලු ලොට්"), !_mineOnly, () {
+                  _chip(_district != null && _district!.isNotEmpty ? tr("Near me ($_district)", "මා අසල ($_district)", "என் அருகில் ($_district)") : tr("All lots", "සියලු ලොට්", "அனைத்துத் தொகுப்புகள்"), !_mineOnly, () {
                     setState(() => _mineOnly = false);
                     _load();
                   }),
-                  _chip(tr("My lots", "මගේ ලොට්"), _mineOnly, () {
+                  _chip(tr("My lots", "මගේ ලොට්", "என் தொகுப்புகள்"), _mineOnly, () {
                     setState(() => _mineOnly = true);
                     _load();
                   }),
@@ -337,8 +337,8 @@ class _GroupLotsScreenState extends State<GroupLotsScreen> {
               else if (_lots.isEmpty)
                 EmptyState(
                   icon: Icons.groups_outlined,
-                  title: tr("No group lots yet", "තවම කණ්ඩායම් ලොට් නැත"),
-                  subtitle: tr("Start one and invite your neighbours to join.", "එකක් අරඹා අසල්වැසියන්ට එක්වීමට ආරාධනා කරන්න."),
+                  title: tr("No group lots yet", "තවම කණ්ඩායම් ලොට් නැත", "இன்னும் குழுத் தொகுப்புகள் இல்லை"),
+                  subtitle: tr("Start one and invite your neighbours to join.", "එකක් අරඹා අසල්වැසියන්ට එක්වීමට ආරාධනා කරන්න.", "ஒன்றைத் தொடங்கி அண்டை விவசாயிகளைச் சேர அழையுங்கள்."),
                 )
               else
                 ..._lots.map(_lotCard),
@@ -403,7 +403,7 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
     }
   }
 
-  String? _numberValidator(String? v) => (v == null || double.tryParse(v) == null) ? tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න") : null;
+  String? _numberValidator(String? v) => (v == null || double.tryParse(v) == null) ? tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න", "சரியான எண்ணை உள்ளிடுங்கள்") : null;
 
   @override
   Widget build(BuildContext context) {
@@ -416,22 +416,22 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(tr("Start a group lot", "කණ්ඩායම් ලොට් එකක් අරඹන්න"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
+              Text(tr("Start a group lot", "කණ්ඩායම් ලොට් එකක් අරඹන්න", "குழுத் தொகுப்பைத் தொடங்கு"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800)),
               const SizedBox(height: 14),
               CropPickerField(
                 controller: _cropController,
-                label: tr("Crop", "බෝගය"),
-                validator: (v) => (v == null || v.isEmpty) ? tr("Required", "අවශ්‍යයි") : null,
+                label: tr("Crop", "බෝගය", "பயிர்"),
+                validator: (v) => (v == null || v.isEmpty) ? tr("Required", "අවශ්‍යයි", "தேவை") : null,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _targetController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: tr("Lot size to reach (kg, at least 50)", "ලොට් එකේ ඉලක්කය (කි.ග්‍රෑ., අවම 50)"), border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: tr("Lot size to reach (kg, at least 50)", "ලොට් එකේ ඉලක්කය (කි.ග්‍රෑ., අවම 50)", "எட்ட வேண்டிய தொகுப்பு அளவு (கி.கி., குறைந்தது 50)"), border: const OutlineInputBorder()),
                 validator: (v) {
                   final n = double.tryParse(v ?? "");
-                  if (n == null) return tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න");
-                  if (n < 50) return tr("At least 50 kg", "අවම වශයෙන් කි.ග්‍රෑ. 50");
+                  if (n == null) return tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න", "சரியான எண்ணை உள்ளிடுங்கள்");
+                  if (n < 50) return tr("At least 50 kg", "අවම වශයෙන් කි.ග්‍රෑ. 50", "குறைந்தது 50 கி.கி.");
                   return null;
                 },
               ),
@@ -439,19 +439,19 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
               TextFormField(
                 controller: _priceController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: tr("Asking price per kg (LKR)", "කි.ග්‍රෑ. එකක මිල (LKR)"), border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: tr("Asking price per kg (LKR)", "කි.ග්‍රෑ. එකක මිල (LKR)", "கேட்கும் விலை ஒரு கி.கி.க்கு (LKR)"), border: const OutlineInputBorder()),
                 validator: _numberValidator,
               ),
               const SizedBox(height: 10),
               TextFormField(
                 controller: _ownController,
                 keyboardType: TextInputType.number,
-                decoration: InputDecoration(labelText: tr("How many kg will YOU add?", "ඔබ කි.ග්‍රෑ. කීයක් එක් කරනවාද?"), border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: tr("How many kg will YOU add?", "ඔබ කි.ග්‍රෑ. කීයක් එක් කරනවාද?", "நீங்கள் எத்தனை கி.கி. சேர்ப்பீர்கள்?"), border: const OutlineInputBorder()),
                 validator: (v) {
                   final own = double.tryParse(v ?? "");
                   final target = double.tryParse(_targetController.text);
-                  if (own == null || own < 1) return tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න");
-                  if (target != null && own > target) return tr("More than the lot size", "ලොට් එකේ ප්‍රමාණයට වඩා වැඩියි");
+                  if (own == null || own < 1) return tr("Enter a valid number", "වලංගු අංකයක් ඇතුළත් කරන්න", "சரியான எண்ணை உள்ளிடுங்கள்");
+                  if (target != null && own > target) return tr("More than the lot size", "ලොට් එකේ ප්‍රමාණයට වඩා වැඩියි", "தொகுப்பு அளவை விட அதிகம்");
                   return null;
                 },
               ),
@@ -459,9 +459,9 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
               TextFormField(
                 controller: _noteController,
                 maxLength: 200,
-                decoration: InputDecoration(labelText: tr("Pickup place / note (optional)", "රැගෙන යන ස්ථානය / සටහන (අත්‍යවශ්‍ය නොවේ)"), border: const OutlineInputBorder()),
+                decoration: InputDecoration(labelText: tr("Pickup place / note (optional)", "රැගෙන යන ස්ථානය / සටහන (අත්‍යවශ්‍ය නොවේ)", "எடுத்துச் செல்லும் இடம் / குறிப்பு (விருப்பம்)"), border: const OutlineInputBorder()),
               ),
-              Text(tr("Lot stays open for", "ලොට් එක විවෘතව තබන කාලය"), style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: mutedOf(context))),
+              Text(tr("Lot stays open for", "ලොට් එක විවෘතව තබන කාලය", "தொகுப்பு திறந்திருக்கும் காலம்"), style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: mutedOf(context))),
               const SizedBox(height: 6),
               Wrap(
                 children: [3, 5, 7].map((d) {
@@ -469,7 +469,7 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
                   return Padding(
                     padding: const EdgeInsets.only(right: 8),
                     child: ChoiceChip(
-                      label: Text(tr("$d days", "දින $d")),
+                      label: Text(tr("$d days", "දින $d", "$d நாட்கள்")),
                       selected: selected,
                       selectedColor: AppColors.forest,
                       labelStyle: TextStyle(color: selected ? Colors.white : null, fontWeight: FontWeight.w600),
@@ -490,7 +490,7 @@ class _CreateLotSheetState extends State<_CreateLotSheet> {
                   style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 14)),
                   child: _saving
                       ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(strokeWidth: 2, color: Colors.white))
-                      : Text(tr("Create lot", "ලොට් එක සාදන්න")),
+                      : Text(tr("Create lot", "ලොට් එක සාදන්න", "தொகுப்பை உருவாக்கு")),
                 ),
               ),
             ],

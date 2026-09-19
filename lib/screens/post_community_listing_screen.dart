@@ -3,6 +3,7 @@ import 'package:geolocator/geolocator.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
+import '../localization/tr.dart';
 
 class PostCommunityListingScreen extends StatefulWidget {
   const PostCommunityListingScreen({super.key});
@@ -154,7 +155,7 @@ class _PostCommunityListingScreenState extends State<PostCommunityListingScreen>
                     keyboardType: TextInputType.phone,
                     decoration: InputDecoration(
                       labelText: t("contactPhoneLabel"),
-                      helperText: "Leave blank to use your account's phone number",
+                      helperText: tr("Leave blank to use your account's phone number", "ඔබගේ ගිණුමේ දුරකථන අංකය භාවිත කිරීමට හිස්ව තබන්න", "உங்கள் கணக்கின் தொலைபேசி எண்ணைப் பயன்படுத்த வெறுமையாக விடுங்கள்"),
                       border: const OutlineInputBorder(),
                     ),
                   ),

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
+import '../localization/tr.dart';
 
 class ForgotPasswordScreen extends StatefulWidget {
   const ForgotPasswordScreen({super.key});
@@ -142,7 +143,7 @@ class _ForgotPasswordScreenState extends State<ForgotPasswordScreen> {
             if (_codeSent)
               TextButton(
                 onPressed: _isLoading ? null : _requestCode,
-                child: const Text("Resend code"),
+                child: Text(tr("Resend code", "කේතය නැවත යවන්න", "குறியீட்டை மீண்டும் அனுப்பு")),
               ),
           ],
         ),

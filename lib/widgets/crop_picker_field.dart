@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../localization/app_locale.dart';
+import '../localization/crop_names.dart';
 import '../models/timeline_model.dart';
 import '../services/auth_service.dart';
 import '../services/crop_recommendation_service.dart';
@@ -144,7 +145,7 @@ class _CropPickerSheetState extends State<_CropPickerSheet> {
   bool _matchesQuery(CropOption crop) {
     final query = _query.trim();
     if (query.isEmpty) return true;
-    return crop.name.toLowerCase().contains(query.toLowerCase()) || crop.nameSi.contains(query);
+    return cropMatchesQuery(crop, query);
   }
 
   Widget _sectionHeader(String text) {
@@ -158,12 +159,11 @@ class _CropPickerSheetState extends State<_CropPickerSheet> {
   }
 
   Widget _cropTile(CropOption crop) {
-    final sinhala = _isSinhala();
     final selected = crop.name.toLowerCase() == widget.currentValue.trim().toLowerCase();
     return ListTile(
       leading: CropThumbnail(wikiImageTitle: crop.wikiImageTitle, size: 40),
-      title: Text(sinhala ? crop.nameSi : crop.name, style: const TextStyle(fontWeight: FontWeight.w600)),
-      subtitle: Text(sinhala ? crop.name : crop.nameSi),
+      title: Text(cropLocalName(crop), style: const TextStyle(fontWeight: FontWeight.w600)),
+      subtitle: Text(AppLocale.instance.languageCode == "en" ? "${crop.nameSi} · ${cropTamilName(crop)}" : crop.name),
       trailing: selected ? const Icon(Icons.check_circle_rounded, color: AppColors.forest) : null,
       onTap: () => Navigator.pop(context, crop.name),
     );

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/crop_recommendation_service.dart';
 import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
+import '../localization/crop_names.dart';
 import '../widgets/crop_thumbnail.dart';
 import '../widgets/fade_slide_in.dart';
 
@@ -117,7 +118,7 @@ class _SeasonalCalendarScreenState extends State<SeasonalCalendarScreen> {
                               margin: const EdgeInsets.only(bottom: 10),
                               child: ListTile(
                                 leading: CropThumbnail(wikiImageTitle: crop.wikiImageTitle, size: 44),
-                                title: Text("${crop.name}  ·  ${crop.nameSi}", style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
+                                title: Text(cropBilingualTitle(crop), style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13.5)),
                                 subtitle: Text(
                                   "${crop.category.label} · ${AppLocale.instance.t("growthCycle")}: ${crop.growthDurationDays} ${AppLocale.instance.t("days")}",
                                   style: const TextStyle(fontSize: 12),

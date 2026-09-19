@@ -8,6 +8,7 @@ import '../widgets/smooth_route.dart';
 import '../localization/app_locale.dart';
 import '../widgets/shimmer_loading.dart';
 import 'disease_scanner_screen.dart';
+import '../localization/tr.dart';
 
 class RemindersScreen extends StatefulWidget {
   const RemindersScreen({super.key});
@@ -83,7 +84,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
               ? EmptyState(
                   icon: Icons.notifications_none_rounded,
                   title: t("allCaughtUp"),
-                  subtitle: "Weather, disease, harvest, and task reminders will show up here as they come in.",
+                  subtitle: tr("Weather, disease, harvest, and task reminders will show up here as they come in.", "කාලගුණ, රෝග, අස්වැන්න සහ කාර්ය මතක් කිරීම් ලැබෙන විට මෙහි පෙන්වයි.", "வானிலை, நோய், அறுவடை மற்றும் பணி நினைவூட்டல்கள் வரும்போது இங்கே தோன்றும்."),
                 )
               : RefreshIndicator(
                   onRefresh: _loadReminders,
@@ -168,7 +169,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
                                   const SizedBox(width: 8),
                                   IconButton(
                                     icon: const Icon(Icons.close_rounded, size: 18, color: AppColors.inkMuted),
-                                    tooltip: "Dismiss",
+                                    tooltip: tr("Dismiss", "ඉවත් කරන්න", "நீக்கு"),
                                     onPressed: () => _dismiss(reminder["_id"]),
                                   ),
                                 ],

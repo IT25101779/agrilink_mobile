@@ -59,7 +59,7 @@ class VoiceService {
   /// Reads [text] aloud in the farmer's currently selected language.
   static Future<void> speak(String text) async {
     if (text.trim().isEmpty) return;
-    final localeId = AppLocale.instance.languageCode == "si" ? "si-LK" : "en-US";
+    final localeId = AppLocale.instance.speechLocaleId;
     try {
       await _tts.setLanguage(localeId);
     } catch (_) {

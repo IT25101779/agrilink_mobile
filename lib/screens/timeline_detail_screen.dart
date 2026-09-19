@@ -10,6 +10,7 @@ import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
 import '../widgets/fade_slide_in.dart';
 import 'suppliers_screen.dart';
+import '../localization/tr.dart';
 
 class TimelineDetailScreen extends StatefulWidget {
   final String timelineKey;
@@ -68,7 +69,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text("Request Crop Funding"),
+        title: Text(tr("Request Crop Funding", "බෝග අරමුදල් ඉල්ලන්න", "பயிர் நிதி கோருங்கள்")),
         content: SingleChildScrollView(
           child: Column(
             mainAxisSize: MainAxisSize.min,
@@ -76,26 +77,26 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
               TextField(
                 controller: goalController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Funding goal (LKR)"),
+                decoration: InputDecoration(labelText: tr("Funding goal (LKR)", "අරමුදල් ඉලක්කය (LKR)", "நிதி இலக்கு (LKR)")),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: returnController,
                 keyboardType: TextInputType.number,
-                decoration: const InputDecoration(labelText: "Return offered to investors (%)"),
+                decoration: InputDecoration(labelText: tr("Return offered to investors (%)", "ආයෝජකයන්ට පිරිනමන ප්‍රතිලාභය (%)", "முதலீட்டாளர்களுக்கு வழங்கும் வருமானம் (%)")),
               ),
               const SizedBox(height: 10),
               TextField(
                 controller: descriptionController,
                 maxLines: 3,
-                decoration: const InputDecoration(labelText: "Why do you need this funding?"),
+                decoration: InputDecoration(labelText: tr("Why do you need this funding?", "ඔබට මෙම අරමුදල් අවශ්‍ය ඇයි?", "இந்த நிதி ஏன் தேவை?")),
               ),
             ],
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Submit")),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Submit", "ඉදිරිපත් කරන්න", "சமர்ப்பி"))),
         ],
       ),
     );
@@ -120,7 +121,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
 
     if (result["success"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Funding campaign created! Investors can now find and pledge to it.")),
+        SnackBar(content: Text(tr("Funding campaign created! Investors can now find and pledge to it.", "අරමුදල් ව්‍යාපෘතිය සාදා ඇත! ආයෝජකයන්ට දැන් එය සොයාගෙන ප්‍රතිඥා දිය හැක.", "நிதித் திட்டம் உருவாக்கப்பட்டது! முதலீட்டாளர்கள் இப்போது அதைக் கண்டு உறுதியளிக்கலாம்."))),
       );
       _loadCampaign();
     } else {
@@ -141,13 +142,13 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
       context: context,
       builder: (context) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
-        title: const Text("Repay Investors"),
+        title: Text(tr("Repay Investors", "ආයෝජකයන්ට ආපසු ගෙවන්න", "முதலீட்டாளர்களுக்குத் திருப்பிச் செலுத்து")),
         content: Text(
           "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — AgriLink AI doesn't move money directly yet. Your credit score will increase once confirmed.",
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Confirm Repayment")),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Confirm Repayment", "ආපසු ගෙවීම තහවුරු කරන්න", "திருப்பிச் செலுத்துதலை உறுதிப்படுத்து"))),
         ],
       ),
     );
@@ -249,7 +250,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
               children: [
                 const Icon(Icons.volunteer_activism_rounded, color: AppColors.indigo, size: 18),
                 const SizedBox(width: 8),
-                const Text("Crop Funding Campaign", style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
+                Text(tr("Crop Funding Campaign", "බෝග අරමුදල් ව්‍යාපෘතිය", "பயிர் நிதித் திட்டம்"), style: TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
                 const Spacer(),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -297,8 +298,8 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
 
     if (timeline == null) {
       return Scaffold(
-        appBar: AppBar(title: const Text("Timeline")),
-        body: const Center(child: Text("Timeline not found.")),
+        appBar: AppBar(title: Text(tr("Timeline", "කාලසටහන", "காலவரிசை"))),
+        body: Center(child: Text(tr("Timeline not found.", "කාලසටහන හමු නොවීය.", "காலவரிசை கிடைக்கவில்லை."))),
       );
     }
 
@@ -312,7 +313,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
         actions: [
           IconButton(
             icon: const Icon(Icons.storefront_outlined),
-            tooltip: "Nearby Suppliers & Rentals",
+            tooltip: tr("Nearby Suppliers & Rentals", "අවට සැපයුම්කරුවන් සහ කුලී", "அருகிலுள்ள விநியோகஸ்தர்கள் & வாடகை"),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SuppliersScreen())),
           ),
         ],
@@ -395,7 +396,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
                           padding: const EdgeInsets.only(top: 10, right: 6),
                           child: IconButton(
                             icon: const Icon(Icons.volume_up_rounded, size: 19, color: AppColors.forest),
-                            tooltip: "Read aloud",
+                            tooltip: tr("Read aloud", "හඬ නඟා කියවන්න", "உரக்கப் படி"),
                             onPressed: () => VoiceService.speak("${milestone.localizedTitle}. ${milestone.localizedDescription}"),
                           ),
                         ),

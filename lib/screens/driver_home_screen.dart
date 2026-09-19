@@ -5,6 +5,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
 import 'login_screen.dart';
+import '../localization/tr.dart';
 
 const List<String> _destinationHubs = [
   "Dambulla",
@@ -84,7 +85,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   Future<void> _declareStatus() async {
     if (_vehicleRegController.text.trim().isEmpty || _capacityController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Please enter vehicle registration and capacity.")),
+        SnackBar(content: Text(tr("Please enter vehicle registration and capacity.", "කරුණාකර වාහන ලියාපදිංචි අංකය සහ ධාරිතාව ඇතුළත් කරන්න.", "வாகனப் பதிவு எண்ணையும் திறனையும் உள்ளிடுங்கள்."))),
       );
       return;
     }
@@ -115,7 +116,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       _startLocationPings();
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Status declared. You are now visible to nearby farmers.")),
+          SnackBar(content: Text(tr("Status declared. You are now visible to nearby farmers.", "තත්ත්වය ප්‍රකාශ කළා. ඔබ දැන් අවට ගොවීන්ට පෙනේ.", "நிலை அறிவிக்கப்பட்டது. நீங்கள் இப்போது அருகிலுள்ள விவசாயிகளுக்குத் தெரிவீர்கள்."))),
         );
       }
     } else if (mounted) {
@@ -185,7 +186,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
         final t = AppLocale.instance.t;
         return Scaffold(
       appBar: AppBar(
-        title: const Text("Driver Dashboard"),
+        title: Text(tr("Driver Dashboard", "රියදුරු උපකරණ පුවරුව", "ஓட்டுநர் முகப்புப் பலகை")),
                 actions: [
           Padding(
             padding: const EdgeInsets.only(right: 8),
@@ -205,18 +206,18 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _vehicleRegController,
-                    decoration: const InputDecoration(labelText: "Vehicle registration no.", border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: tr("Vehicle registration no.", "වාහන ලියාපදිංචි අංකය", "வாகனப் பதிவு எண்"), border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 10),
                   TextField(
                     controller: _capacityController,
                     keyboardType: TextInputType.number,
-                    decoration: const InputDecoration(labelText: "Total capacity (kg)", border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: tr("Total capacity (kg)", "මුළු ධාරිතාව (කි.ග්‍රෑ.)", "மொத்தத் திறன் (கி.கி.)"), border: OutlineInputBorder()),
                   ),
                   const SizedBox(height: 10),
                   DropdownButtonFormField<String>(
                     value: _destinationHub,
-                    decoration: const InputDecoration(labelText: "Target destination hub", border: OutlineInputBorder()),
+                    decoration: InputDecoration(labelText: tr("Target destination hub", "ඉලක්කගත ගමනාන්ත මධ්‍යස්ථානය", "இலக்கு சேருமிட மையம்"), border: OutlineInputBorder()),
                     items: _destinationHubs
                         .map((hub) => DropdownMenuItem(value: hub, child: Text(hub.replaceAll("_", " "))))
                         .toList(),
@@ -289,7 +290,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                   if (activeBookings.isEmpty)
-                    const Text("No active cargo on board.", style: TextStyle(color: Colors.grey))
+                    Text(tr("No active cargo on board.", "දැනට ප්‍රවාහනය කරන භාණ්ඩ නැත.", "தற்போது ஏற்றப்பட்ட சரக்கு இல்லை."), style: TextStyle(color: Colors.grey))
                   else
                     ...activeBookings.map((b) => Card(
                           margin: const EdgeInsets.only(bottom: 8),
@@ -299,11 +300,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                             trailing: b["status"] == "confirmed"
                                 ? TextButton(
                                     onPressed: () => _respondToBooking(b["_id"], "picked_up"),
-                                    child: const Text("Mark Picked Up"),
+                                    child: Text(tr("Mark Picked Up", "රැගෙන ගියා ලෙස සලකුණු කරන්න", "எடுத்துச் சென்றதாகக் குறி")),
                                   )
                                 : TextButton(
                                     onPressed: () => _respondToBooking(b["_id"], "delivered"),
-                                    child: const Text("Mark Delivered"),
+                                    child: Text(tr("Mark Delivered", "බෙදා හැරියා ලෙස සලකුණු කරන්න", "வழங்கப்பட்டதாகக் குறி")),
                                   ),
                           ),
                         )),

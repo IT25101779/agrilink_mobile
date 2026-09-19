@@ -97,7 +97,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
 
     if (result["success"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(tr("Listing created successfully!", "දැන්වීම සාර්ථකව සාදන ලදී!"))),
+        SnackBar(content: Text(tr("Listing created successfully!", "දැන්වීම සාර්ථකව සාදන ලදී!", "பட்டியல் வெற்றிகரமாக உருவாக்கப்பட்டது!"))),
       );
       _cropController.clear();
       _quantityController.clear();
@@ -141,7 +141,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                 const SizedBox(height: 10),
                 DropdownButtonFormField<String>(
                   value: qualityGrade,
-                  decoration: const InputDecoration(labelText: "Quality grade"),
+                  decoration: InputDecoration(labelText: tr("Quality grade", "ගුණාත්මක ශ්‍රේණිය", "தரம்")),
                   items: ["A", "B", "C"].map((g) => DropdownMenuItem(value: g, child: Text("Grade $g"))).toList(),
                   onChanged: (v) => setDialogState(() => qualityGrade = v ?? "A"),
                 ),
@@ -261,7 +261,7 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                       const SizedBox(height: 12),
                       Align(
                         alignment: Alignment.centerLeft,
-                        child: Text(tr("When is it harvested?", "අස්වැන්න නෙලන්නේ කවදාද?"),
+                        child: Text(tr("When is it harvested?", "අස්වැන්න නෙලන්නේ කවදාද?", "எப்போது அறுவடை?"),
                             style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.w700, color: mutedOf(context))),
                       ),
                       const SizedBox(height: 6),
@@ -269,9 +269,9 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                         alignment: Alignment.centerLeft,
                         child: Wrap(
                           children: [
-                            _harvestChip(0, tr("Today", "අද")),
-                            _harvestChip(3, tr("In 3 days", "දින 3කින්")),
-                            _harvestChip(7, tr("In 7 days", "දින 7කින්")),
+                            _harvestChip(0, tr("Today", "අද", "இன்று")),
+                            _harvestChip(3, tr("In 3 days", "දින 3කින්", "3 நாட்களில்")),
+                            _harvestChip(7, tr("In 7 days", "දින 7කින්", "7 நாட்களில்")),
                           ],
                         ),
                       ),
@@ -299,11 +299,11 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
                   title: t("myListings"),
                   subtitle: tr(
                     "Live advice on each listing: freshness, market price trend and nearby supply.",
-                    "එක් එක් දැන්වීම සඳහා සජීවී උපදෙස්: නැවුම්බව, මිල ප්‍රවණතාව සහ අසල සැපයුම.",
+                    "එක් එක් දැන්වීම සඳහා සජීවී උපදෙස්: නැවුම්බව, මිල ප්‍රවණතාව සහ අසල සැපයුම.", "ஒவ்வொரு பட்டியலுக்கும் நேரடி ஆலோசனை: புத்துணர்ச்சி, சந்தை விலைப் போக்கு மற்றும் அருகிலுள்ள விநியோகம்.",
                   ),
                   trailing: IconButton(
                     icon: const Icon(Icons.refresh_rounded),
-                    tooltip: tr("Refresh", "නැවුම් කරන්න"),
+                    tooltip: tr("Refresh", "නැවුම් කරන්න", "புதுப்பி"),
                     onPressed: _loadListings,
                   ),
                 ),

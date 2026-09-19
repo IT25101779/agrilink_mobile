@@ -4,6 +4,7 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
 import '../widgets/shimmer_loading.dart';
+import '../localization/tr.dart';
 
 const List<String> _destinationHubs = [
   "Any",
@@ -80,13 +81,13 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
           controller: weightController,
           keyboardType: TextInputType.number,
           decoration: InputDecoration(
-            labelText: "Weight to send (kg)",
+            labelText: tr("Weight to send (kg)", "යැවිය යුතු බර (කි.ග්‍රෑ.)", "அனுப்ப வேண்டிய எடை (கி.கி.)"),
             helperText: "Available: ${lorry["remainingCapacityKg"]}kg",
           ),
         ),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(context, false), child: const Text("Cancel")),
-          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: const Text("Request")),
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Request", "ඉල්ලන්න", "கோரு"))),
         ],
       ),
     );
@@ -113,7 +114,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
 
     if (result["success"] == true) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Cargo space requested! The driver will confirm shortly.")),
+        SnackBar(content: Text(tr("Cargo space requested! The driver will confirm shortly.", "භාණ්ඩ ඉඩ ඉල්ලා ඇත! රියදුරු ඉක්මනින් තහවුරු කරනු ඇත.", "சரக்கு இடம் கோரப்பட்டது! ஓட்டுநர் விரைவில் உறுதிப்படுத்துவார்."))),
       );
       _searchNearbyLorries();
     } else {

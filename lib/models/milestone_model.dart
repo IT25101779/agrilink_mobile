@@ -1,5 +1,6 @@
 import 'package:hive/hive.dart';
 import '../localization/app_locale.dart';
+import '../localization/milestone_ta.dart';
 
 class MilestoneModel {
   int day;
@@ -25,10 +26,19 @@ class MilestoneModel {
   /// Returns the title in whichever language the farmer currently has
   /// selected, falling back to English if no Sinhala version was generated
   /// (e.g. milestones created before this feature existed).
-  String get localizedTitle => AppLocale.instance.languageCode == "si" && titleSi != null ? titleSi! : title;
+  String get localizedTitle {
+    final code = AppLocale.instance.languageCode;
+    if (code == "si" && titleSi != null) return titleSi!;
+    if (code == "ta") return MilestoneTamil.title(title) ?? title;
+    return title;
+  }
 
-  String get localizedDescription =>
-      AppLocale.instance.languageCode == "si" && descriptionSi != null ? descriptionSi! : description;
+  String get localizedDescription {
+    final code = AppLocale.instance.languageCode;
+    if (code == "si" && descriptionSi != null) return descriptionSi!;
+    if (code == "ta") return MilestoneTamil.description(title) ?? description;
+    return description;
+  }
 
   Map<String, dynamic> toJson() => {
         "day": day,

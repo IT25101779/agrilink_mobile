@@ -92,13 +92,11 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
 
   Future<void> _scanImage() async {
     if (_imageBytes == null) {
-      setState(() => _errorMessage = "Please take or upload a photo first.");
+      setState(() => _errorMessage = tr("Please take or upload a photo first.", "කරුණාකර මුලින්ම ඡායාරූපයක් ගන්න හෝ උඩුගත කරන්න.", "முதலில் ஒரு புகைப்படம் எடுக்கவும் அல்லது பதிவேற்றவும்."));
       return;
     }
     if (_cropController.text.trim().isEmpty) {
-      setState(() => _errorMessage = AppLocale.instance.languageCode == "si"
-          ? "කරුණාකර බෝගය තෝරන්න."
-          : "Please select the crop.");
+      setState(() => _errorMessage = tr("Please select the crop.", "කරුණාකර බෝගය තෝරන්න.", "பயிரைத் தேர்ந்தெடுக்கவும்."));
       return;
     }
 
@@ -201,11 +199,11 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
               width: double.infinity,
               padding: const EdgeInsets.all(10),
               decoration: BoxDecoration(color: const Color(0xFFEFF3FF), borderRadius: BorderRadius.circular(10)),
-              child: const Row(
+              child: Row(
                 children: [
                   Icon(Icons.notifications_active_rounded, size: 16, color: Color(0xFF4F46E5)),
                   SizedBox(width: 8),
-                  Expanded(child: Text("Responding to a reminder — this photo will be linked automatically.", style: TextStyle(fontSize: 12))),
+                  Expanded(child: Text(tr("Responding to a reminder — this photo will be linked automatically.", "මතක් කිරීමකට පිළිතුරු දෙමින් — මෙම ඡායාරූපය ස්වයංක්‍රීයව සම්බන්ධ වේ.", "நினைவூட்டலுக்குப் பதிலளிக்கிறீர்கள் — இந்தப் புகைப்படம் தானாக இணைக்கப்படும்."), style: TextStyle(fontSize: 12))),
                 ],
               ),
             ),
@@ -213,7 +211,7 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
           const SizedBox(height: 16),
           CropPickerField(
             controller: _cropController,
-            label: AppLocale.instance.languageCode == "si" ? "බෝගය තෝරන්න" : "Select crop",
+            label: tr("Select crop", "බෝගය තෝරන්න", "பயிரைத் தேர்ந்தெடுக்கவும்"),
           ),
           const SizedBox(height: 16),
           if (_imageBytes != null)
@@ -236,11 +234,11 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
                 children: [
                   const Icon(Icons.photo_camera_rounded, size: 44, color: AppColors.forest),
                   const SizedBox(height: 10),
-                  Text(tr("Add a photo of the affected leaf", "රෝගී කොළයේ ඡායාරූපයක් එක් කරන්න"),
+                  Text(tr("Add a photo of the affected leaf", "රෝගී කොළයේ ඡායාරූපයක් එක් කරන්න", "பாதிக்கப்பட்ட இலையின் புகைப்படத்தைச் சேர்க்கவும்"),
                       textAlign: TextAlign.center, style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 14)),
                   const SizedBox(height: 6),
                   Text(
-                    tr("Tip: one leaf, close-up, in daylight, in focus.", "ඉඟිය: එක් කොළයක්, සමීපව, දහවල් එළියේ, පැහැදිලිව."),
+                    tr("Tip: one leaf, close-up, in daylight, in focus.", "ඉඟිය: එක් කොළයක්, සමීපව, දහවල් එළියේ, පැහැදිලිව.", "குறிப்பு: ஒரு இலை, நெருக்கமாக, பகல் வெளிச்சத்தில், தெளிவாக."),
                     textAlign: TextAlign.center,
                     style: TextStyle(fontSize: 12.5, color: mutedOf(context), height: 1.4),
                   ),
@@ -438,7 +436,7 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text(tr("Diagnosis", "රෝග විනිශ්චය"), style: TextStyle(fontSize: 11.5, color: mutedOf(context), fontWeight: FontWeight.w700)),
+                      Text(tr("Diagnosis", "රෝග විනිශ්චය", "நோய் கண்டறிதல்"), style: TextStyle(fontSize: 11.5, color: mutedOf(context), fontWeight: FontWeight.w700)),
                       Text("$disease", style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 17, height: 1.2)),
                     ],
                   ),
@@ -451,7 +449,7 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
               children: [
                 Expanded(child: RoundedBar(value: confidenceValue, color: severityColor, height: 9)),
                 const SizedBox(width: 10),
-                Text("$confidence% ${tr("match", "ගැලපීම")}", style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5)),
+                Text("$confidence% ${tr("match", "ගැලපීම", "பொருத்தம்")}", style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 12.5)),
               ],
             ),
             if (severity != null && severity.isNotEmpty) ...[
@@ -466,9 +464,7 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
         InfoBanner(
           icon: Icons.info_outline_rounded,
           color: AppColors.gold,
-          text: AppLocale.instance.languageCode == "si"
-              ? "මෙම ප්‍රතිඵලය අඩු විශ්වාසයකින් යුක්තයි. කරුණාකර රෝග ඇති කොළයේ වඩාත් පැහැදිලි, සමීප ඡායාරූපයක් ගෙන නැවත උත්සාහ කරන්න."
-              : "This result has low confidence. Please retake a clearer, close-up photo of the affected leaf and try again.",
+          text: tr("This result has low confidence. Please retake a clearer, close-up photo of the affected leaf and try again.", "මෙම ප්‍රතිඵලය අඩු විශ්වාසයකින් යුක්තයි. කරුණාකර රෝග ඇති කොළයේ වඩාත් පැහැදිලි, සමීප ඡායාරූපයක් ගෙන නැවත උත්සාහ කරන්න.", "இந்த முடிவின் நம்பகத்தன்மை குறைவு. பாதிக்கப்பட்ட இலையின் தெளிவான, நெருக்கமான புகைப்படத்தை எடுத்து மீண்டும் முயற்சிக்கவும்."),
         ),
       ],
       if (treatmentText != null || (treatment != null && treatment.isNotEmpty)) ...[
