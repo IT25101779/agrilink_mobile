@@ -34,7 +34,7 @@ dependencies:
   google_maps_flutter: ^2.9.0
   # Group chat voice messages: record with `record`, play back with `audioplayers`,
   # and `path_provider` for the temporary recording file.
-  record: ^5.1.2
+  record: ^6.0.0
   audioplayers: ^6.1.0
   path_provider: ^2.1.4
 
