@@ -4,6 +4,9 @@ import '../localization/crop_names.dart';
 import '../localization/tr.dart';
 import '../services/crop_recommendation_service.dart';
 import '../services/group_chat_api.dart';
+import '../services/farm_api.dart';
+import 'survey_screen.dart';
+import '../widgets/smooth_route.dart';
 import '../theme/app_theme.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/ui_kit.dart';
@@ -27,6 +30,12 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
   String? _filterDistrict;
   String? _filterCrop; // English crop name, as the server expects
   bool _searching = false;
+  String? _searchError;
+  Map<String, dynamic>? _dir;
+  String? _dirError;
+  int _dirTab = 0; // 0 = areas, 1 = crops
+  String _dirQuery = "";
+  int _openSurveys = 0;
   List<Map<String, dynamic>>? _results;
 
   @override
@@ -40,8 +49,17 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
   Future<void> _load() async {
     final mine = await GroupChatApi.myGroups();
     final suggested = await GroupChatApi.suggested();
+    final dir = await FarmApi.groupDirectory();
+    final surveys = await FarmApi.openSurveys();
     if (!mounted) return;
     setState(() {
+      if (dir["success"] == true) {
+        _dir = Map<String, dynamic>.from(dir["data"] as Map);
+        _dirError = null;
+      } else {
+        _dirError = "${dir["message"] ?? ""}";
+      }
+      if (surveys["success"] == true) _openSurveys = (surveys["data"] as List).length;
       _loading = false;
       if (mine["success"] == true) {
         _mine = _asList(mine["data"]);
@@ -54,12 +72,17 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
   }
 
   Future<void> _search() async {
-    setState(() => _searching = true);
+    setState(() {
+      _searching = true;
+      _searchError = null;
+    });
     final result = await GroupChatApi.search(district: _filterDistrict, crop: _filterCrop);
     if (!mounted) return;
     setState(() {
       _searching = false;
-      _results = result["success"] == true ? _asList(result["data"]) : [];
+      // A failed request is NOT "no groups" — say so, so the person knows to try again.
+      _searchError = result["success"] == true ? null : "${result["message"] ?? tr("Could not reach the community server. Check your internet and try again.", "ප්‍රජා සේවාදායකයට ළඟා විය නොහැක. අන්තර්ජාලය පරීක්ෂා කර නැවත උත්සාහ කරන්න.", "சமூக சர்வரை அடைய முடியவில்லை. இணையத்தைச் சரிபார்த்து மீண்டும் முயலவும்.")}";
+      _results = result["success"] == true ? _asList(result["data"]) : null;
     });
   }
 
@@ -85,6 +108,19 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
       child: ListView(
         padding: const EdgeInsets.fromLTRB(16, 12, 16, 120),
         children: [
+          if (_openSurveys > 0) Padding(
+            padding: const EdgeInsets.only(bottom: 12),
+            child: SoftCard(
+              margin: EdgeInsets.zero,
+              onTap: () => Navigator.push(context, SmoothRoute(page: const SurveyScreen())).then((_) => _load()),
+              child: Row(children: [
+                const Icon(Icons.poll_rounded, color: Color(0xFFB45309)),
+                const SizedBox(width: 12),
+                Expanded(child: Text(tr("$_openSurveys quick survey(s) waiting — 2 minutes", "කෙටි සමීක්ෂණ $_openSurveys ක් බලා සිටී — විනාඩි 2", "$_openSurveys விரைவு கருத்துக்கணிப்பு காத்திருக்கிறது — 2 நிமிடம்"), style: const TextStyle(fontWeight: FontWeight.w700))),
+                const Icon(Icons.chevron_right_rounded),
+              ]),
+            ),
+          ),
           FadeSlideIn(child: _privacyBanner(context)),
           const SizedBox(height: 18),
           _heading(tr("My groups", "මගේ කණ්ඩායම්", "என் குழுக்கள்")),
@@ -104,6 +140,9 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
           const SizedBox(height: 18),
           _heading(tr("Find a group", "කණ්ඩායමක් සොයන්න", "குழுவைத் தேடு")),
           _finder(context),
+          const SizedBox(height: 18),
+          _heading(tr("Browse all groups", "සියලු කණ්ඩායම් බලන්න", "அனைத்துக் குழுக்களையும் பார்")),
+          _directory(context),
         ],
       ),
     );
@@ -187,6 +226,27 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
     );
   }
 
+  /// EVERY group, always listed (even with 0 members) — tap one to join. Nothing to type.
+  Widget _directory(BuildContext context) {
+    if (_dir == null) {
+      return _note(_dirError != null && _dirError!.isNotEmpty ? _dirError! : tr("Couldn't load the group list. Pull down to try again.", "කණ්ඩායම් ලැයිස්තුව පූරණය කළ නොහැක. නැවත උත්සාහ කිරීමට පහළට ඇද්දන්න.", "குழு பட்டியலை ஏற்ற முடியவில்லை. மீண்டும் முயல கீழே இழுக்கவும்."));
+    }
+    final all = Map<String, dynamic>.from(_dir!["all"] as Map);
+    final list = _asList(_dir![_dirTab == 0 ? "districts" : "crops"]).where((g) => groupTitle(g).toLowerCase().contains(_dirQuery.toLowerCase())).toList();
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _groupCard(all, joined: all["joined"] == true),
+      Row(children: [
+        ChoiceChip(label: Text(tr("Areas", "ප්‍රදේශ", "பகுதிகள்")), selected: _dirTab == 0, onSelected: (_) => setState(() => _dirTab = 0)),
+        const SizedBox(width: 8),
+        ChoiceChip(label: Text(tr("Crops", "බෝග", "பயிர்கள்")), selected: _dirTab == 1, onSelected: (_) => setState(() => _dirTab = 1)),
+      ]),
+      const SizedBox(height: 10),
+      TextField(onChanged: (v) => setState(() => _dirQuery = v), decoration: InputDecoration(prefixIcon: const Icon(Icons.search_rounded), hintText: tr("Filter the list", "ලැයිස්තුව පෙරන්න", "பட்டியலை வடிகட்டு"))),
+      const SizedBox(height: 10),
+      for (final g in list) _groupCard(g, joined: g["joined"] == true),
+    ]);
+  }
+
   Widget _finder(BuildContext context) {
     final crops = List<CropOption>.from(CropRecommendationService.catalogue)..sort((a, b) => a.name.compareTo(b.name));
     return SoftCard(
@@ -201,7 +261,10 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
               DropdownMenuItem<String?>(value: null, child: Text(tr("Any area", "ඕනෑම ප්‍රදේශයක්", "எந்தப் பகுதியும்"))),
               ...kChatDistricts.map((d) => DropdownMenuItem<String?>(value: d, child: Text(d))),
             ],
-            onChanged: (value) => setState(() => _filterDistrict = value),
+            onChanged: (value) {
+              setState(() => _filterDistrict = value);
+              _search();
+            },
           ),
           const SizedBox(height: 12),
           DropdownButtonFormField<String?>(
@@ -212,7 +275,10 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
               DropdownMenuItem<String?>(value: null, child: Text(tr("Any crop", "ඕනෑම බෝගයක්", "எந்தப் பயிரும்"))),
               ...crops.map((c) => DropdownMenuItem<String?>(value: c.name, child: Text(cropLocalName(c), overflow: TextOverflow.ellipsis))),
             ],
-            onChanged: (value) => setState(() => _filterCrop = value),
+            onChanged: (value) {
+              setState(() => _filterCrop = value);
+              _search();
+            },
           ),
           const SizedBox(height: 14),
           SizedBox(
@@ -223,6 +289,8 @@ class _ChatHubScreenState extends State<ChatHubScreen> {
               label: Text(tr("Search", "සොයන්න", "தேடு")),
             ),
           ),
+          if (_searchError != null) Padding(padding: const EdgeInsets.only(top: 12), child: Text(_searchError!, style: const TextStyle(color: AppColors.danger, fontSize: 13))),
+          if (_results != null && _results!.isEmpty && _searchError == null) _note(tr("No groups match. Try “Any area” or “Any crop”.", "ගැළපෙන කණ්ඩායම් නැත. “ඕනෑම ප්‍රදේශයක්” හෝ “ඕනෑම බෝගයක්” උත්සාහ කරන්න.", "பொருந்தும் குழுக்கள் இல்லை. “எந்தப் பகுதியும்” அல்லது “எந்தப் பயிரும்” முயலுங்கள்.")),
           if (_results != null) ...[
             const SizedBox(height: 14),
             for (final group in _results!) _groupCard(group, joined: group["joined"] == true),

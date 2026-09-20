@@ -1,3 +1,8 @@
+import '../widgets/ad_banner.dart';
+import '../widgets/delivery_check_sheet.dart';
+import '../widgets/smooth_route.dart';
+import '../localization/tr.dart';
+import 'return_trips_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/api_service.dart';
@@ -136,6 +141,15 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
       listenable: AppLocale.instance,
       builder: (context, _) => Column(
       children: [
+        const Padding(padding: EdgeInsets.fromLTRB(16, 12, 16, 0), child: AdBanner(placement: "logistics")),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
+          child: Row(children: [
+            Expanded(child: OutlinedButton.icon(onPressed: () => Navigator.push(context, SmoothRoute(page: const ReturnTripsScreen())), icon: const Icon(Icons.local_shipping_rounded, size: 18), label: Text(tr("Return-load deals", "ආපසු ගමන් දීමනා", "திரும்பும் லாரி சலுகைகள்"), style: const TextStyle(fontSize: 12)))),
+            const SizedBox(width: 8),
+            Expanded(child: OutlinedButton.icon(onPressed: () => showDeliveryCheckSheet(context), icon: const Icon(Icons.ac_unit_rounded, size: 18), label: Text(tr("Freshness check", "නැවුම්බව පරීක්ෂාව", "புத்துணர்ச்சிச் சோதனை"), style: const TextStyle(fontSize: 12)))),
+          ]),
+        ),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(

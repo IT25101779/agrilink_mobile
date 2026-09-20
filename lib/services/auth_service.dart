@@ -105,6 +105,13 @@ class AuthService {
     await prefs.remove(_districtKey);
   }
 
+  /// After the farmer edits their profile, keep the values stored on the phone in step.
+  static Future<void> updateLocalProfile({String? name, String? district}) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (name != null && name.isNotEmpty) await prefs.setString(_userNameKey, name);
+    if (district != null && district.isNotEmpty) await prefs.setString(_districtKey, district);
+  }
+
   static Future<String?> getDistrict() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_districtKey);

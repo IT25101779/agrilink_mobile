@@ -10,6 +10,7 @@ import '../localization/app_locale.dart';
 import '../widgets/empty_state.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/smooth_route.dart';
+import '../widgets/ad_banner.dart';
 import 'timeline_detail_screen.dart';
 
 class TimelineListScreen extends StatefulWidget {
@@ -58,6 +59,7 @@ class _TimelineListScreenState extends State<TimelineListScreen> {
         final t = AppLocale.instance.t;
         return Column(
       children: [
+        const Padding(padding: EdgeInsets.fromLTRB(16, 12, 16, 0), child: AdBanner(placement: "timeline")),
         Container(
           width: double.infinity,
           margin: const EdgeInsets.fromLTRB(16, 14, 16, 0),

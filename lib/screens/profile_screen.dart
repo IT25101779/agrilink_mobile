@@ -13,6 +13,15 @@ import 'login_screen.dart';
 import 'farm_passport_screen.dart';
 import '../localization/tr.dart';
 import '../widgets/smooth_route.dart';
+import '../widgets/user_avatar.dart';
+import '../widgets/ui_kit.dart';
+import 'edit_profile_screen.dart';
+import 'orders_screen.dart';
+import 'ledger_screen.dart';
+import 'price_board_screen.dart';
+import 'survey_screen.dart';
+import 'return_trips_screen.dart';
+import '../widgets/delivery_check_sheet.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -106,18 +115,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     FadeSlideIn(
                       child: Column(
                         children: [
-                          CircleAvatar(
-                            radius: 34,
-                            backgroundColor: AppColors.forestLight,
-                            child: Text(
-                              (_user?["fullName"] as String? ?? "?").substring(0, 1).toUpperCase(),
-                              style: const TextStyle(fontSize: 26, fontWeight: FontWeight.w800, color: AppColors.forest),
-                            ),
+                          UserAvatar(
+                            userId: _user?["_id"] as String?,
+                            name: _user?["fullName"] as String? ?? "?",
+                            size: 76,
+                            hasPicture: _user?["avatarUpdatedAt"] != null,
+                            version: "${_user?["avatarUpdatedAt"]}",
                           ),
                           const SizedBox(height: 10),
                           Text(_user?["fullName"] ?? "", style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700)),
                           if (district != null)
                             Text(district, style: const TextStyle(fontSize: 13, color: AppColors.inkMuted)),
+                          TextButton.icon(
+                            onPressed: () async {
+                              final changed = await Navigator.push(context, SmoothRoute(page: const EditProfileScreen()));
+                              if (changed == true) _load();
+                            },
+                            icon: const Icon(Icons.edit_rounded, size: 16),
+                            label: Text(tr("Edit profile", "පැතිකඩ සංස්කරණය", "சுயவிவரத்தைத் திருத்து")),
+                          ),
                         ],
                       ),
                     ),
@@ -146,6 +162,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       delayMs: 190,
                       child: _passportCard(),
                     ),
+                    if (_user?["role"] == "farmer") ...[
+                      const SizedBox(height: 20),
+                      FadeSlideIn(delayMs: 205, child: _toolsSection()),
+                    ],
                     const SizedBox(height: 28),
                     FadeSlideIn(
                       delayMs: 220,
@@ -209,6 +229,39 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   /// Entry point to the Farm Passport (shareable track record + QR code).
+  Widget _toolTile(IconData icon, Color color, String label, VoidCallback onTap) {
+    return SoftCard(
+      margin: EdgeInsets.zero,
+      onTap: onTap,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+      child: Row(children: [
+        Container(width: 38, height: 38, decoration: BoxDecoration(color: tintOf(context, color), borderRadius: BorderRadius.circular(12)), child: Icon(icon, color: color, size: 20)),
+        const SizedBox(width: 10),
+        Expanded(child: Text(label, maxLines: 2, overflow: TextOverflow.ellipsis, style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13))),
+      ]),
+    );
+  }
+
+  Widget _toolsSection() {
+    void open(Widget page) => Navigator.push(context, SmoothRoute(page: page));
+    final tiles = [
+      _toolTile(Icons.receipt_long_rounded, const Color(0xFF0B5D3B), tr("My orders", "මගේ ඇණවුම්", "என் ஆர்டர்கள்"), () => open(const OrdersScreen())),
+      _toolTile(Icons.account_balance_wallet_rounded, const Color(0xFF7C3AED), tr("Farm ledger", "ගොවිපල ගිණුම්", "பண்ணைக் கணக்கு"), () => open(const LedgerScreen())),
+      _toolTile(Icons.show_chart_rounded, const Color(0xFFEA580C), tr("Price board", "මිල පුවරුව", "விலைப் பலகை"), () => open(const PriceBoardScreen())),
+      _toolTile(Icons.local_shipping_rounded, const Color(0xFF2563EB), tr("Return-load deals", "ආපසු ගමන් දීමනා", "திரும்பும் லாரி சலுகைகள்"), () => open(const ReturnTripsScreen())),
+      _toolTile(Icons.ac_unit_rounded, const Color(0xFF0E7490), tr("Delivery freshness", "බෙදාහැරීමේ නැවුම්බව", "விநியோகப் புத்துணர்ச்சி"), () => showDeliveryCheckSheet(context)),
+      _toolTile(Icons.poll_rounded, const Color(0xFFB45309), tr("Quick surveys", "කෙටි සමීක්ෂණ", "விரைவு கருத்துக்கணிப்புகள்"), () => open(const SurveyScreen())),
+    ];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(tr("Farm tools", "ගොවිපල මෙවලම්", "பண்ணைக் கருவிகள்"), style: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700)),
+        const SizedBox(height: 10),
+        GridView.count(crossAxisCount: 2, shrinkWrap: true, physics: const NeverScrollableScrollPhysics(), crossAxisSpacing: 10, mainAxisSpacing: 10, childAspectRatio: 2.5, children: tiles),
+      ],
+    );
+  }
+
   Widget _passportCard() {
     return Material(
       color: Colors.transparent,

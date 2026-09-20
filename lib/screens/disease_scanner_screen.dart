@@ -1,3 +1,4 @@
+import '../widgets/ad_banner.dart';
 import 'dart:convert';
 import 'dart:typed_data';
 import 'package:flutter/material.dart';
@@ -187,6 +188,7 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          const AdBanner(placement: "scanner"),
           Text(t("scanCropForDisease"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 4),
           Text(

@@ -1,3 +1,4 @@
+import '../widgets/session_guard.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
@@ -5,6 +6,10 @@ import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
 import 'login_screen.dart';
+import 'driver_trips_screen.dart';
+import 'edit_profile_screen.dart';
+import '../widgets/ad_banner.dart';
+import '../widgets/smooth_route.dart';
 import '../localization/tr.dart';
 
 const List<String> _destinationHubs = [
@@ -184,7 +189,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       listenable: AppLocale.instance,
       builder: (context, _) {
         final t = AppLocale.instance.t;
-        return Scaffold(
+        return SessionGuard(child: Scaffold(
       appBar: AppBar(
         title: Text(tr("Driver Dashboard", "රියදුරු උපකරණ පුවරුව", "ஓட்டுநர் முகப்புப் பலகை")),
                 actions: [
@@ -202,6 +207,13 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const AdBanner(placement: "driver"),
+                  Row(children: [
+                    Expanded(child: OutlinedButton.icon(onPressed: () => Navigator.push(context, SmoothRoute(page: const DriverTripsScreen())), icon: const Icon(Icons.add_road_rounded), label: Text(tr("Return trips", "ආපසු ගමන්", "திரும்பும் பயணங்கள்")))),
+                    const SizedBox(width: 10),
+                    Expanded(child: OutlinedButton.icon(onPressed: () => Navigator.push(context, SmoothRoute(page: const EditProfileScreen())), icon: const Icon(Icons.person_rounded), label: Text(tr("My profile", "මගේ පැතිකඩ", "என் சுயவிவரம்")))),
+                  ]),
+                  const SizedBox(height: 14),
                   Text(t("tripStatus"), style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 12),
                   TextField(
@@ -311,7 +323,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                 ],
               ),
             ),
-    );
+    ));
       },
     );
   }

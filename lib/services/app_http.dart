@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'session_events.dart';
 
 /// Thin wrapper around package:http that:
 ///   1. Adds the header ngrok requires to skip its free-tier browser-warning
@@ -22,6 +23,17 @@ class AppHttp {
   static const Map<String, String> _ngrokBypass = {"ngrok-skip-browser-warning": "true"};
   static const Duration _timeout = Duration(seconds: 20);
 
+
+  /// A 401 on a request that CARRIED a login token means the token has expired
+  /// (or the account was removed). Tell the app so it can sign out cleanly
+  /// instead of leaving the farmer on half-working screens.
+  static http.Response _checkSession(http.Response response, Map<String, String>? headers) {
+    if (response.statusCode == 401 && headers != null && headers.keys.any((k) => k.toLowerCase() == "authorization")) {
+      SessionEvents.notifyExpired();
+    }
+    return response;
+  }
+
   static http.Response _networkErrorResponse(Object error) {
     final message = error.toString().contains("TimeoutException")
         ? "The server took too long to respond. Please check your internet connection and try again."
@@ -34,7 +46,7 @@ class AppHttp {
 
   static Future<http.Response> get(Uri url, {Map<String, String>? headers}) async {
     try {
-      return await http.get(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout);
+      return _checkSession(await http.get(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
     }
@@ -42,7 +54,7 @@ class AppHttp {
 
   static Future<http.Response> post(Uri url, {Map<String, String>? headers, Object? body}) async {
     try {
-      return await http.post(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout);
+      return _checkSession(await http.post(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
     }
@@ -50,7 +62,7 @@ class AppHttp {
 
   static Future<http.Response> patch(Uri url, {Map<String, String>? headers, Object? body}) async {
     try {
-      return await http.patch(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout);
+      return _checkSession(await http.patch(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
     }
@@ -58,7 +70,7 @@ class AppHttp {
 
   static Future<http.Response> delete(Uri url, {Map<String, String>? headers}) async {
     try {
-      return await http.delete(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout);
+      return _checkSession(await http.delete(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
     }

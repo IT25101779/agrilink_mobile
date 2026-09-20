@@ -1,3 +1,4 @@
+import '../widgets/session_guard.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import 'crop_navigator_screen.dart';
@@ -101,7 +102,7 @@ class _HomeScreenState extends State<HomeScreen> {
           NavItem(Icons.forum_rounded, tr("Community", "ප්‍රජාව", "சமூகம்")),
         ];
 
-        return Scaffold(
+        return SessionGuard(child: Scaffold(
           extendBody: true,
           appBar: AppBar(
             title: Text(titles[_selectedIndex]),
@@ -160,7 +161,7 @@ class _HomeScreenState extends State<HomeScreen> {
             currentIndex: _selectedIndex,
             onTap: (index) => setState(() => _selectedIndex = index),
           ),
-        );
+        ));
       },
     );
   }
