@@ -8,6 +8,8 @@ import 'localization/app_locale.dart';
 import 'screens/splash_screen.dart';
 import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
+import 'services/app_settings.dart';
+import 'services/offline_store.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,6 +23,9 @@ void main() async {
   // Start listening for connectivity changes so pending offline records
   // sync automatically the moment the device regains internet access.
   SyncService.listenAndAutoSync(timelineBox);
+
+  await AppSettings.instance.load();
+  OfflineStore.startListening(); // sends saved records when the internet returns
 
   await AppLocale.instance.loadSavedLanguage();
   await ThemeController.instance.loadSavedMode();

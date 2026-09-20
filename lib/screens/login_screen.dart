@@ -1,3 +1,4 @@
+import 'officer_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../services/auth_service.dart';
 import '../theme/app_theme.dart';
@@ -47,7 +48,7 @@ class _LoginScreenState extends State<LoginScreen> {
       if (!mounted) return;
       Navigator.pushAndRemoveUntil(
         context,
-        SmoothRoute(page: role == "driver" ? const DriverHomeScreen() : const HomeScreen()),
+        SmoothRoute(page: role == "driver" ? const DriverHomeScreen() : role == "officer" ? const OfficerHomeScreen() : const HomeScreen()),
         (route) => false,
       );
     } else {

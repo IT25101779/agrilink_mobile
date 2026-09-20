@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/app_settings.dart';
 import '../services/crop_image_service.dart';
 import '../theme/app_theme.dart';
 import 'shimmer_loading.dart';
@@ -30,6 +31,14 @@ class _CropThumbnailState extends State<CropThumbnail> {
   }
 
   Future<void> _load() async {
+    if (AppSettings.instance.lowData) {
+      // Low-data mode: no photo is downloaded, a leaf icon is shown instead.
+      setState(() {
+        _imageUrl = null;
+        _isLoading = false;
+      });
+      return;
+    }
     setState(() => _isLoading = true);
     final url = await CropImageService.fetchImageUrl(widget.wikiImageTitle);
     if (mounted) {

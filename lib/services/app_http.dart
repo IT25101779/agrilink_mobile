@@ -1,5 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:shared_preferences/shared_preferences.dart';
+import 'app_settings.dart';
 import 'session_events.dart';
 
 /// Thin wrapper around package:http that:
@@ -28,10 +30,27 @@ class AppHttp {
   /// (or the account was removed). Tell the app so it can sign out cleanly
   /// instead of leaving the farmer on half-working screens.
   static http.Response _checkSession(http.Response response, Map<String, String>? headers) {
+    AppSettings.instance.addBytes(response.bodyBytes.length); // running data counter (Profile -> Settings)
     if (response.statusCode == 401 && headers != null && headers.keys.any((k) => k.toLowerCase() == "authorization")) {
       SessionEvents.notifyExpired();
     }
     return response;
+  }
+
+
+  /// Every request carries the login token automatically, so screens never have to remember to.
+  /// (Login / register / password-reset calls are left alone.)
+  static Future<Map<String, String>?> _withAuth(Uri url, Map<String, String>? headers) async {
+    final path = url.path;
+    if (path.contains("/auth/login") || path.contains("/auth/register") || path.contains("/auth/forgot") || path.contains("/auth/reset")) return headers;
+    if (headers != null && headers.keys.any((k) => k.toLowerCase() == "authorization")) return headers;
+    try {
+      final token = (await SharedPreferences.getInstance()).getString("auth_token");
+      if (token == null || token.isEmpty) return headers;
+      return {...?headers, "Authorization": "Bearer $token"};
+    } catch (_) {
+      return headers;
+    }
   }
 
   static http.Response _networkErrorResponse(Object error) {
@@ -46,6 +65,7 @@ class AppHttp {
 
   static Future<http.Response> get(Uri url, {Map<String, String>? headers}) async {
     try {
+      headers = await _withAuth(url, headers);
       return _checkSession(await http.get(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
@@ -54,7 +74,17 @@ class AppHttp {
 
   static Future<http.Response> post(Uri url, {Map<String, String>? headers, Object? body}) async {
     try {
+      headers = await _withAuth(url, headers);
       return _checkSession(await http.post(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout), headers);
+    } catch (e) {
+      return _networkErrorResponse(e);
+    }
+  }
+
+  static Future<http.Response> put(Uri url, {Map<String, String>? headers, Object? body}) async {
+    try {
+      headers = await _withAuth(url, headers);
+      return _checkSession(await http.put(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
     }
@@ -62,6 +92,7 @@ class AppHttp {
 
   static Future<http.Response> patch(Uri url, {Map<String, String>? headers, Object? body}) async {
     try {
+      headers = await _withAuth(url, headers);
       return _checkSession(await http.patch(url, headers: {..._ngrokBypass, ...?headers}, body: body).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);
@@ -70,6 +101,7 @@ class AppHttp {
 
   static Future<http.Response> delete(Uri url, {Map<String, String>? headers}) async {
     try {
+      headers = await _withAuth(url, headers);
       return _checkSession(await http.delete(url, headers: {..._ngrokBypass, ...?headers}).timeout(_timeout), headers);
     } catch (e) {
       return _networkErrorResponse(e);

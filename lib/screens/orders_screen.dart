@@ -1,3 +1,4 @@
+import '../widgets/order_safety_sheet.dart';
 import 'package:flutter/material.dart';
 import '../localization/tr.dart';
 import '../services/farm_api.dart';
@@ -247,6 +248,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
         if (status != "cancelled") ...[const SizedBox(height: 14), _stepper(status)],
         if (hint.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 10), child: Text(hint, style: TextStyle(fontSize: 12.5, color: status == "cancelled" ? Colors.grey : AppColors.inkMuted))),
         if (actions.isNotEmpty) Padding(padding: const EdgeInsets.only(top: 14), child: Row(children: actions)),
+        if (!["placed", "cancelled"].contains(o["status"])) Align(alignment: Alignment.centerRight, child: TextButton.icon(onPressed: () => showOrderSafetySheet(context, o), icon: const Icon(Icons.shield_outlined, size: 18), label: Text(tr("Photos / problem / report", "ඡායාරූප / ගැටලුව / වාර්තාව", "படங்கள் / பிரச்சினை / புகார்")))),
         if (o["canRate"] == true) Padding(padding: const EdgeInsets.only(top: 10), child: SizedBox(width: double.infinity, child: OutlinedButton.icon(onPressed: () => _rateDialog(o), icon: const Icon(Icons.star_rounded, color: Color(0xFFF59E0B)), label: Text(tr("Rate the buyer", "ගැනුම්කරුට ශ්‍රේණිගත කරන්න", "வாங்குபவரை மதிப்பிடு"))))),
         if (o["myRating"] != null) Padding(padding: const EdgeInsets.only(top: 8), child: Text("${tr("You rated", "ඔබේ ශ්‍රේණිගත කිරීම", "உங்கள் மதிப்பீடு")}: ${"★" * (o["myRating"] as int)}", style: const TextStyle(fontSize: 12, color: Color(0xFFB45309), fontWeight: FontWeight.w700))),
       ]),

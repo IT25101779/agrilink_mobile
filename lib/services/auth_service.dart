@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'app_http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'offline_store.dart';
 import 'api_service.dart';
 
 class AuthService {
@@ -19,6 +20,7 @@ class AuthService {
     required String role,
     Map<String, dynamic>? farmerProfile,
     Map<String, dynamic>? driverProfile,
+    String referralCode = "",
   }) async {
     final response = await AppHttp.post(
       Uri.parse("${ApiService.baseUrl}/auth/register"),
@@ -31,6 +33,7 @@ class AuthService {
         "role": role,
         if (farmerProfile != null) "farmerProfile": farmerProfile,
         if (driverProfile != null) "driverProfile": driverProfile,
+        if (referralCode.isNotEmpty) "referralCode": referralCode,
       }),
     );
     final result = _handle(response);
@@ -103,6 +106,7 @@ class AuthService {
     await prefs.remove(_userNameKey);
     await prefs.remove(_userRoleKey);
     await prefs.remove(_districtKey);
+    await OfflineStore.clearAll(); // saved copies and waiting records belong to the person who just left
   }
 
   /// After the farmer edits their profile, keep the values stored on the phone in step.

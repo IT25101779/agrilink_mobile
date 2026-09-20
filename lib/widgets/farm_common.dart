@@ -30,6 +30,10 @@ String hubName(String hub) {
       return tr("Jaffna", "යාපනය", "யாழ்ப்பாணம்");
     case "Meegoda":
       return tr("Meegoda", "මීගොඩ", "மீகொடை");
+    case "Narahenpita":
+      return tr("Narahenpita", "නාරාහේන්පිට", "நாரஹேன்பிட்டி");
+    case "Thambuttegama":
+      return tr("Thambuttegama", "තඹුත්තේගම", "தம்புத்தேகம");
     default:
       return hub.replaceAll("_", " ");
   }

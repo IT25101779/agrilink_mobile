@@ -1,3 +1,4 @@
+import '../services/app_settings.dart';
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -83,7 +84,7 @@ class _AdBannerState extends State<AdBanner> {
         children: [
           InkWell(
             onTap: _open,
-            child: image.isNotEmpty ? _pictureAd(image, ad) : _textAd(ad),
+            child: image.isNotEmpty && !AppSettings.instance.lowData ? _pictureAd(image, ad) : _textAd(ad),
           ),
           Positioned(
             top: 6,

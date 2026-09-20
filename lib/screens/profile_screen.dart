@@ -1,3 +1,5 @@
+import 'help_hub_screen.dart';
+import 'settings_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:hive/hive.dart';
 import '../models/timeline_model.dart';
@@ -250,6 +252,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
       _toolTile(Icons.show_chart_rounded, const Color(0xFFEA580C), tr("Price board", "මිල පුවරුව", "விலைப் பலகை"), () => open(const PriceBoardScreen())),
       _toolTile(Icons.local_shipping_rounded, const Color(0xFF2563EB), tr("Return-load deals", "ආපසු ගමන් දීමනා", "திரும்பும் லாரி சலுகைகள்"), () => open(const ReturnTripsScreen())),
       _toolTile(Icons.ac_unit_rounded, const Color(0xFF0E7490), tr("Delivery freshness", "බෙදාහැරීමේ නැවුම්බව", "விநியோகப் புத்துணர்ச்சி"), () => showDeliveryCheckSheet(context)),
+      _toolTile(Icons.health_and_safety_rounded, const Color(0xFF0B5D3B), tr("Help & safety", "උපකාර හා ආරක්ෂාව", "உதவி & பாதுகாப்பு"), () => open(const HelpHubScreen())),
+      _toolTile(Icons.settings_rounded, const Color(0xFF475569), tr("Settings & privacy", "සැකසුම් හා රහස්‍යතාව", "அமைப்புகள் & தனியுரிமை"), () => open(const SettingsScreen())),
       _toolTile(Icons.poll_rounded, const Color(0xFFB45309), tr("Quick surveys", "කෙටි සමීක්ෂණ", "விரைவு கருத்துக்கணிப்புகள்"), () => open(const SurveyScreen())),
     ];
     return Column(

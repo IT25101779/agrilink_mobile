@@ -5,6 +5,8 @@ import '../services/farm_api.dart';
 import '../theme/app_theme.dart';
 import '../widgets/farm_common.dart';
 import '../widgets/ui_kit.dart';
+import '../widgets/help_widgets.dart';
+import '../services/share_helper.dart';
 
 /// Today's official wholesale prices by market, with history, farmer reports and price alerts.
 class PriceBoardScreen extends StatefulWidget {
@@ -156,11 +158,18 @@ class _PriceBoardScreenState extends State<PriceBoardScreen> {
     );
   }
 
+  /// Sends today's top prices to WhatsApp - farmers already share prices this way.
+  Future<void> _shareBoard() async {
+    if (_rows.isEmpty) return;
+    final lines = _rows.take(10).map((r) => "${r["cropType"]}: LKR ${r["pricePerKg"]}/kg").join("\n");
+    await ShareHelper.whatsapp("${tr("AgriLink prices today", "අද AgriLink මිල", "இன்றைய AgriLink விலைகள்")}\n$lines");
+  }
+
   @override
   Widget build(BuildContext context) {
     final shown = _rows.where((r) => cropLabel("${r["cropType"]}").toLowerCase().contains(_query.toLowerCase()) || "${r["cropType"]}".toLowerCase().contains(_query.toLowerCase())).toList();
     return Scaffold(
-      appBar: AppBar(title: Text(tr("Price board", "මිල පුවරුව", "விலைப் பலகை"))),
+      appBar: AppBar(actions: [IconButton(tooltip: tr("Share today's prices", "අද මිල බෙදාගන්න", "இன்றைய விலைகளைப் பகிர்"), icon: const Icon(Icons.share_rounded), onPressed: _shareBoard), IconButton(tooltip: tr("Guaranteed prices", "සහතික මිල", "உத்தரவாத விலை"), icon: const Icon(Icons.verified_rounded), onPressed: () => showSupportPricesSheet(context))], title: Text(tr("Price board", "මිල පුවරුව", "விலைப் பலகை"))),
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 40), children: [

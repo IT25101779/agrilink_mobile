@@ -22,6 +22,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final _phoneController = TextEditingController();
   final _passwordController = TextEditingController();
   final _districtController = TextEditingController();
+  final _referralController = TextEditingController();
   final _vehicleRegController = TextEditingController();
   final _vehicleCapacityController = TextEditingController();
 
@@ -42,6 +43,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
       phone: _phoneController.text.trim(),
       password: _passwordController.text,
       role: _role,
+      referralCode: _referralController.text.trim(),
       farmerProfile: _role == "farmer" ? {"district": _districtController.text.trim()} : null,
       driverProfile: _role == "driver"
           ? {
@@ -134,6 +136,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
                   keyboardType: TextInputType.phone,
                   decoration: InputDecoration(labelText: t("phoneNumber"), prefixIcon: const Icon(Icons.phone_outlined, size: 20)),
                   validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
+                ),
+                const SizedBox(height: 12),
+                TextFormField(
+                  controller: _referralController,
+                  textCapitalization: TextCapitalization.characters,
+                  decoration: const InputDecoration(labelText: "Invitation code (optional)", prefixIcon: Icon(Icons.card_giftcard_rounded, size: 20)),
                 ),
                 const SizedBox(height: 12),
                 if (_role == "farmer")

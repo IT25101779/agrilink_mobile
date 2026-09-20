@@ -1,3 +1,5 @@
+import '../services/offline_store.dart';
+import '../widgets/gates.dart';
 import '../widgets/session_guard.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
@@ -43,6 +45,11 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
   @override
   void initState() {
     super.initState();
+    OfflineStore.flush();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await VersionGate.check(context);
+      if (mounted) await ConsentGate.check(context);
+    });
     _init();
   }
 

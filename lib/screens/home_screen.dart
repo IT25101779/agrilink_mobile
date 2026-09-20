@@ -23,6 +23,10 @@ import '../widgets/theme_toggle.dart';
 import 'profile_screen.dart';
 import '../localization/tr.dart';
 import 'chat_hub_screen.dart';
+import 'simple_home_screen.dart';
+import '../services/app_settings.dart';
+import '../services/offline_store.dart';
+import '../widgets/gates.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -51,6 +55,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _loadUserName();
     _pullTimelinesOnOpen();
     _refreshReminders();
+    OfflineStore.flush(); // send anything saved while offline
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await VersionGate.check(context);
+      if (mounted) await ConsentGate.check(context);
+    });
   }
 
   Future<void> _loadUserName() async {
@@ -88,6 +97,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    // Simple mode swaps the whole home for a few big picture buttons.
+    return ListenableBuilder(
+      listenable: AppSettings.instance,
+      builder: (context, _) => AppSettings.instance.simpleMode ? SimpleHomeScreen(onBackToNormal: () => setState(() {})) : _normalBuild(context),
+    );
+  }
+
+  Widget _normalBuild(BuildContext context) {
     return ListenableBuilder(
       listenable: AppLocale.instance,
       builder: (context, _) {

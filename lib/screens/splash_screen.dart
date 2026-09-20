@@ -1,3 +1,4 @@
+import 'officer_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
@@ -37,7 +38,7 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Widget destination;
     if (widget.loggedIn) {
-      destination = widget.role == "driver" ? const DriverHomeScreen() : const HomeScreen();
+      destination = widget.role == "driver" ? const DriverHomeScreen() : widget.role == "officer" ? const OfficerHomeScreen() : const HomeScreen();
     } else {
       final seenOnboarding = await OnboardingScreen.hasSeenOnboarding();
       destination = seenOnboarding ? const LoginScreen() : const OnboardingScreen();
