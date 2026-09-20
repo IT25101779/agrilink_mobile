@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../services/insights_api.dart';
+import '../services/help_api.dart';
 import '../localization/app_locale.dart';
 import '../localization/tr.dart';
 import '../widgets/shimmer_loading.dart';
@@ -80,8 +81,30 @@ class _MarketplaceScreenState extends State<MarketplaceScreen> {
     setState(() => _adviceById = map);
   }
 
+  /// Warns when the price is far above or below the official prices of the last 7 days (typo or scam protection).
+  Future<bool> _confirmPrice() async {
+    final r = await HelpApi.priceCheck(_cropController.text.trim(), double.tryParse(_priceController.text) ?? 0);
+    if (r["success"] != true) return true;
+    final verdict = r["data"]["verdict"];
+    if (verdict != "high" && verdict != "low") return true;
+    final ref = r["data"]["referencePerKg"];
+    final go = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(verdict == "high" ? tr("This price looks very high", "මෙම මිල ඉතා ඉහළයි", "இந்த விலை மிக அதிகம்") : tr("This price looks very low", "මෙම මිල ඉතා අඩුයි", "இந்த விலை மிகக் குறைவு")),
+        content: Text("${tr("Official market price this week is about", "මෙම සතියේ නිල වෙළඳපොළ මිල ආසන්න වශයෙන්", "இந்த வாரம் சந்தை விலை சுமார்")} LKR $ref/kg. ${tr("Did you type it correctly?", "ඔබ නිවැරදිව ඇතුළත් කළාද?", "சரியாக உள்ளிட்டீர்களா?")}"),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(ctx, false), child: Text(tr("Change price", "මිල වෙනස් කරන්න", "விலையை மாற்று"))),
+          ElevatedButton(onPressed: () => Navigator.pop(ctx, true), child: Text(tr("Post anyway", "කෙසේ වෙතත් පළ කරන්න", "எப்படியும் பதிவிடு"))),
+        ],
+      ),
+    );
+    return go == true;
+  }
+
   Future<void> _submitListing() async {
     if (!_formKey.currentState!.validate()) return;
+    if (!await _confirmPrice()) return;
     setState(() => _isSubmitting = true);
 
     final result = await ApiService.createMarketplaceListing(

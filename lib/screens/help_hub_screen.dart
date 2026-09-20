@@ -5,6 +5,7 @@ import '../widgets/feedback_sheet.dart';
 import '../widgets/ui_kit.dart';
 import 'ask_officer_screen.dart';
 import 'damage_screen.dart';
+import 'disputes_screen.dart';
 import 'offices_screen.dart';
 import 'pest_library_screen.dart';
 import 'rain_planner_screen.dart';
@@ -38,6 +39,7 @@ class HelpHubScreen extends StatelessWidget {
         tile(Icons.agriculture_rounded, const Color(0xFF7C3AED), tr("My harvests & support", "මගේ අස්වැන්න හා සහනාධාර", "எனது அறுவடை & உதவி"), tr("kg per acre, fertilizer subsidy, lender report", "අක්කරයට කි.ග්‍රෑ, පොහොර සහනාධාරය, ණය වාර්තාව", "ஏக்கருக்கு கிலோ, உர மானியம், கடன் அறிக்கை"), () => open(const RecordsScreen())),
         tile(Icons.storm_rounded, const Color(0xFFB91C1C), tr("Crop damage reports", "බෝග හානි වාර්තා", "பயிர் சேத அறிக்கைகள்"), tr("Photos and details for an insurer or officer", "රක්ෂණ ආයතනයක් හෝ නිලධාරියෙකු සඳහා ඡායාරූප හා විස්තර", "காப்பீட்டாளர்/அலுவலருக்கு படங்களும் விவரங்களும்"), () => open(const DamageScreen())),
         tile(Icons.location_city_rounded, const Color(0xFF2563EB), tr("Get help near me", "ආසන්න උපකාර", "அருகில் உதவி"), tr("Agrarian Service Centre, cooperatives", "ගොවිජන සේවා මධ්‍යස්ථාන, සමුපකාර", "விவசாய சேவை மையம், கூட்டுறவு"), () => open(const OfficesScreen())),
+        tile(Icons.forum_rounded, const Color(0xFFDC2626), tr("My problems", "මගේ ගැටලු", "எனது பிரச்சினைகள்"), tr("Read and reply about a problem with an order", "ඇණවුමක ගැටලුවක් කියවා පිළිතුරු දෙන්න", "ஆர்டர் பிரச்சினையைப் படித்து பதிலளிக்கவும்"), () => open(const DisputesScreen())),
         tile(Icons.settings_rounded, const Color(0xFF475569), tr("Settings & privacy", "සැකසුම් හා රහස්‍යතාව", "அமைப்புகள் & தனியுரிமை"), tr("Low-data, simple mode, SMS, your data", "අඩු දත්ත, සරල ප්‍රකාරය, SMS, ඔබේ දත්ත", "குறைந்த தரவு, எளிய முறை, SMS, உங்கள் தரவு"), () => open(const SettingsScreen())),
         tile(Icons.feedback_rounded, const Color(0xFF059669), tr("Tell us what to improve", "වැඩි දියුණු කළ යුතු දේ කියන්න", "எதை மேம்படுத்த வேண்டும்"), tr("Report a problem or an idea", "ගැටලුවක් හෝ අදහසක් වාර්තා කරන්න", "பிரச்சினை/யோசனையைத் தெரிவிக்கவும்"), () => showFeedbackSheet(context, screen: "help_hub")),
       ]),

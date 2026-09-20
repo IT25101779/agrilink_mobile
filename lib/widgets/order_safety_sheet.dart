@@ -4,6 +4,7 @@ import '../services/help_api.dart';
 import '../theme/app_theme.dart';
 import 'farm_common.dart';
 import 'help_widgets.dart';
+import '../screens/disputes_screen.dart';
 
 /// Everything for a deal that needs care: photo proof, "there is a problem", report or block the other person.
 Future<void> showOrderSafetySheet(BuildContext context, Map<String, dynamic> order) async {
@@ -85,6 +86,7 @@ Future<void> showOrderSafetySheet(BuildContext context, Map<String, dynamic> ord
         ListTile(leading: const Icon(Icons.add_a_photo_rounded), title: Text(tr("Add photo (pickup / goods)", "ඡායාරූපයක් එක් කරන්න (බඩු)", "படம் சேர் (பொருள்)")), onTap: () { Navigator.pop(ctx); photo("goods"); }),
         ListTile(leading: const Icon(Icons.local_shipping_rounded), title: Text(tr("Add photo of delivery", "බෙදාහැරීමේ ඡායාරූපයක්", "விநியோகப் படம்")), onTap: () { Navigator.pop(ctx); photo("delivery"); }),
         ListTile(leading: const Icon(Icons.report_problem_rounded, color: AppColors.danger), title: Text(tr("There is a problem with this order", "මෙම ඇණවුමේ ගැටලුවක් ඇත", "இந்த ஆர்டரில் பிரச்சினை")), onTap: () { Navigator.pop(ctx); problem(); }),
+        ListTile(leading: const Icon(Icons.forum_rounded), title: Text(tr("See / reply to problems", "ගැටලු බලන්න / පිළිතුරු දෙන්න", "பிரச்சினைகளைப் பார் / பதிலளி")), onTap: () { Navigator.pop(ctx); Navigator.push(context, MaterialPageRoute(builder: (_) => const DisputesScreen())); }),
         ListTile(leading: const Icon(Icons.flag_rounded), title: Text("${tr("Report", "වාර්තා කරන්න", "புகார்")} $otherName"), onTap: () { Navigator.pop(ctx); report(); }),
         ListTile(leading: const Icon(Icons.block_rounded), title: Text("${tr("Block", "අවහිර කරන්න", "தடு")} $otherName"), onTap: () { Navigator.pop(ctx); block(); }),
       ]),
