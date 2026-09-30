@@ -72,7 +72,7 @@ class _OfficesScreenState extends State<OfficesScreen> {
           const SizedBox(height: 10),
           if (_loading) const Padding(padding: EdgeInsets.all(30), child: Center(child: CircularProgressIndicator())),
           if (_error != null) InfoBanner(icon: Icons.error_outline_rounded, text: _error!, color: AppColors.danger),
-          if (!_loading && _error == null && _items.isEmpty) emptyState(Icons.location_city_rounded, tr("Nothing listed yet", "තවම කිසිවක් නැත", "இன்னும் எதுவும் இல்லை"), tr("The AgriLink team is adding offices district by district.", "AgriLink කණ්ඩායම දිස්ත්‍රික්ක අනුව කාර්යාල එකතු කරයි.", "AgriLink குழு மாவட்டம் வாரியாக அலுவலகங்களை சேர்க்கிறது.")),
+          if (!_loading && _error == null && _items.isEmpty) emptyState(Icons.location_city_rounded, tr("Nothing listed yet", "තවම කිසිවක් නැත", "இன்னும் எதுவும் இல்லை"), tr("The ගොවි Tech team is adding offices district by district.", "ගොවි Tech කණ්ඩායම දිස්ත්‍රික්ක අනුව කාර්යාල එකතු කරයි.", "ගොවි Tech குழு மாவட்டம் வாரியாக அலுவலகங்களை சேர்க்கிறது.")),
           ..._items.map((o) => SoftCard(
                 child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
                   Text("${o["name"]}", style: const TextStyle(fontWeight: FontWeight.w800, fontSize: 15)),

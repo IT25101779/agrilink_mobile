@@ -49,7 +49,7 @@ class AgriLinkApp extends StatelessWidget {
       listenable: Listenable.merge([AppLocale.instance, ThemeController.instance]),
       builder: (context, _) {
         return MaterialApp(
-          title: "AgriLink AI 2.0",
+          title: "ගොවි Tech",
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,

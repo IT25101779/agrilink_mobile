@@ -41,7 +41,7 @@ Future<void> showOrderSafetySheet(BuildContext context, Map<String, dynamic> ord
     );
     if (go != true) return;
     final r = await HelpApi.openDispute(orderId, reason, text.text.trim());
-    if (context.mounted) showSnack(context, r["success"] == true ? tr("Problem sent. The other person and the AgriLink team can now see it.", "ගැටලුව යැවුවා. අනෙක් පාර්ශ්වයට හා AgriLink කණ්ඩායමට දැන් පෙනේ.", "பிரச்சினை அனுப்பப்பட்டது. மற்றவரும் AgriLink குழுவும் பார்க்கலாம்.") : apiMessage(r));
+    if (context.mounted) showSnack(context, r["success"] == true ? tr("Problem sent. The other person and the ගොවි Tech team can now see it.", "ගැටලුව යැවුවා. අනෙක් පාර්ශ්වයට හා ගොවි Tech කණ්ඩායමට දැන් පෙනේ.", "பிரச்சினை அனுப்பப்பட்டது. மற்றவரும் ගොවි Tech குழுவும் பார்க்கலாம்.") : apiMessage(r));
   }
 
   Future<void> report() async {

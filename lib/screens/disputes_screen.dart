@@ -77,7 +77,7 @@ class _DisputesScreenState extends State<DisputesScreen> {
       body: RefreshIndicator(
         onRefresh: _load,
         child: ListView(padding: const EdgeInsets.fromLTRB(16, 12, 16, 40), children: [
-          InfoBanner(icon: Icons.handshake_rounded, text: tr("Try to agree with the other person here. If you cannot, the AgriLink team will help.", "මෙහි අනෙක් පුද්ගලයා සමඟ එකඟ වීමට උත්සාහ කරන්න. නොහැකි නම් AgriLink කණ්ඩායම උදව් කරයි.", "இங்கே மற்றவருடன் உடன்பட முயலுங்கள். முடியாவிட்டால் AgriLink குழு உதவும்.")),
+          InfoBanner(icon: Icons.handshake_rounded, text: tr("Try to agree with the other person here. If you cannot, the ගොවි Tech team will help.", "මෙහි අනෙක් පුද්ගලයා සමඟ එකඟ වීමට උත්සාහ කරන්න. නොහැකි නම් ගොවි Tech කණ්ඩායම උදව් කරයි.", "இங்கே மற்றவருடன் உடன்பட முயலுங்கள். முடியாவிட்டால் ගොවි Tech குழு உதவும்.")),
           const SizedBox(height: 12),
           if (_loading) const Padding(padding: EdgeInsets.all(30), child: Center(child: CircularProgressIndicator())),
           if (_error != null) InfoBanner(icon: Icons.error_outline_rounded, text: _error!, color: AppColors.danger),

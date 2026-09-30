@@ -162,7 +162,7 @@ class _PriceBoardScreenState extends State<PriceBoardScreen> {
   Future<void> _shareBoard() async {
     if (_rows.isEmpty) return;
     final lines = _rows.take(10).map((r) => "${r["cropType"]}: LKR ${r["pricePerKg"]}/kg").join("\n");
-    await ShareHelper.whatsapp("${tr("AgriLink prices today", "අද AgriLink මිල", "இன்றைய AgriLink விலைகள்")}\n$lines");
+    await ShareHelper.whatsapp("${tr("ගොවි Tech prices today", "අද ගොවි Tech මිල", "இன்றைய ගොවි Tech விலைகள்")}\n$lines");
   }
 
   @override

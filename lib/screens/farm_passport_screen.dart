@@ -140,7 +140,7 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
     "repayment": ["Repay one funding campaign", "අරමුදල් ව්‍යාපෘතියක් ආපසු ගෙවන්න", "Ask investors to fund a crop, then repay after harvest.", "ආයෝජකයන්ගෙන් බෝගයකට අරමුදල් ඉල්ලා, අස්වැන්නෙන් පසු ආපසු ගෙවන්න.", "ஒரு நிதித் திட்டத்தைத் திருப்பிச் செலுத்துங்கள்", "முதலீட்டாளர்களிடம் பயிருக்கு நிதி கேளுங்கள், அறுவடைக்குப் பின் திருப்பிச் செலுத்துங்கள்."],
     "score": ["Reach a credit score of 600", "ණය ලකුණු 600 කට ළඟා වන්න", "The score grows with completed cycles and repaid funding.", "සම්පූර්ණ කළ වට සහ ආපසු ගෙවූ අරමුදල් සමඟ ලකුණු වැඩි වේ.", "கடன் மதிப்பெண் 600 ஐ எட்டுங்கள்", "நிறைவு செய்த சுழற்சிகள் மற்றும் திருப்பிச் செலுத்திய நிதியுடன் மதிப்பெண் உயரும்."],
     "community": ["Complete one group sale", "කණ්ඩායම් විකුණුමක් සම්පූර්ණ කරන්න", "Join a Group Lot in the Market tab and wait for a buyer to claim it.", "වෙළඳපොළ ටැබ් එකේ කණ්ඩායම් ලොට් එකකට එක්වී ගැනුම්කරුවෙකු එය ගන්නා තුරු බලා සිටින්න.", "ஒரு குழு விற்பனையை முடியுங்கள்", "சந்தை தாவலில் ஒரு குழுத் தொகுப்பில் சேர்ந்து, வாங்குபவர் எடுத்துக்கொள்ளும் வரை காத்திருங்கள்."],
-    "history": ["Be active for 60 days", "දින 60ක් සක්‍රියව සිටින්න", "A longer record builds trust; keep using AgriLink.", "දිගු වාර්තාවක් විශ්වාසය ගොඩනඟයි; AgriLink භාවිත කරමින් සිටින්න.", "60 நாட்கள் செயலில் இருங்கள்", "நீண்ட பதிவு நம்பிக்கையை உருவாக்கும்; AgriLink ஐத் தொடர்ந்து பயன்படுத்துங்கள்."],
+    "history": ["Be active for 60 days", "දින 60ක් සක්‍රියව සිටින්න", "A longer record builds trust; keep using ගොවි Tech.", "දිගු වාර්තාවක් විශ්වාසය ගොඩනඟයි; ගොවි Tech භාවිත කරමින් සිටින්න.", "60 நாட்கள் செயலில் இருங்கள்", "நீண்ட பதிவு நம்பிக்கையை உருவாக்கும்; ගொවி Tech ஐத் தொடர்ந்து பயன்படுத்துங்கள்."],
   };
 
   /// LOAN READINESS: how close the farmer is to what lenders like to see.
@@ -214,8 +214,8 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
             );
           }),
           Text(
-            tr("This is AgriLink's own checklist to guide you. It is not a bank's criteria and not a credit decision.",
-                "මෙය ඔබට මග පෙන්වීමට AgriLink හි ම චෙක්ලිස්ට් එකකි. එය බැංකුවක නිර්ණායක හෝ ණය තීරණයක් නොවේ.", "இது உங்களுக்கு வழிகாட்ட AgriLink இன் சொந்தச் சரிபார்ப்புப் பட்டியல். இது வங்கியின் அளவுகோல் அல்ல, கடன் முடிவும் அல்ல."),
+            tr("This is ගොවි Tech's own checklist to guide you. It is not a bank's criteria and not a credit decision.",
+                "මෙය ඔබට මග පෙන්වීමට ගොවි Tech හි ම චෙක්ලිස්ට් එකකි. එය බැංකුවක නිර්ණායක හෝ ණය තීරණයක් නොවේ.", "இது உங்களுக்கு வழிகாட்ட ගොவි Tech இன் சொந்தச் சரிபார்ப்புப் பட்டியல். இது வங்கியின் அளவுகோல் அல்ல, கடன் முடிவும் அல்ல."),
             style: TextStyle(fontSize: 11, color: mutedOf(context), height: 1.35),
           ),
         ],
@@ -287,7 +287,7 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
                 _tile("${stats["completedTimelines"]}", tr("Crop cycles completed", "සම්පූර්ණ කළ වගා වට", "நிறைவு செய்த பயிர் சுழற்சிகள்"), AppColors.forest),
                 _tile("${stats["activeTimelines"]}", tr("Growing now", "දැන් වගා කරන", "இப்போது வளர்பவை"), AppColors.forest),
               ]),
-              SectionHeader(title: tr("Sales on AgriLink", "AgriLink හි විකුණුම්", "AgriLink இல் விற்பனைகள்")),
+              SectionHeader(title: tr("Sales on ගොවි Tech", "ගොවි Tech හි විකුණුම්", "ගොවි Tech இல் விற்பனைகள்")),
               _grid([
                 _tile("${stats["salesCompleted"]}", tr("Completed sales", "සම්පූර්ණ විකුණුම්", "முடிந்த விற்பனைகள்"), AppColors.forest),
                 _tile("${groupedNumber(numOf(stats["kgSold"]))} kg", tr("Produce sold", "විකුණූ අස්වැන්න", "விற்ற விளைபொருள்"), AppColors.forest),
@@ -368,8 +368,8 @@ class _FarmPassportScreenState extends State<FarmPassportScreen> {
           icon: Icons.info_outline_rounded,
           color: AppColors.gold,
           text: tr(
-            "Sales, funding and repayment are recorded from activity on AgriLink. Crop timelines are entered by you and are not independently checked. This passport supports a loan or investment request but does not replace a lender's own checks.",
-            "විකුණුම්, අරමුදල් සහ ආපසු ගෙවීම් AgriLink ක්‍රියාකාරකම් වලින් සටහන් වේ. වගා කාලසටහන් ඔබ විසින් ඇතුළත් කරන අතර ස්වාධීනව පරීක්ෂා නොකෙරේ. මෙම පාස්පෝට් එක ණය හෝ ආයෝජන ඉල්ලීමකට සහාය වන නමුත් ණය දෙන්නාගේ තමන්ගේම පරීක්ෂාවන් ප්‍රතිස්ථාපනය නොකරයි.", "விற்பனை, நிதி மற்றும் திருப்பிச் செலுத்துதல் AgriLink செயல்பாடுகளிலிருந்து பதிவாகின்றன. பயிர் காலவரிசைகளை நீங்களே உள்ளிடுகிறீர்கள்; அவை தனியாகச் சரிபார்க்கப்படுவதில்லை. இந்த பாஸ்போர்ட் கடன் அல்லது முதலீட்டுக் கோரிக்கைக்கு ஆதரவாக இருக்கும், ஆனால் கடன் வழங்குபவரின் சொந்தச் சரிபார்ப்புகளுக்கு மாற்றாகாது.",
+            "Sales, funding and repayment are recorded from activity on ගොවි Tech. Crop timelines are entered by you and are not independently checked. This passport supports a loan or investment request but does not replace a lender's own checks.",
+            "විකුණුම්, අරමුදල් සහ ආපසු ගෙවීම් ගොවි Tech ක්‍රියාකාරකම් වලින් සටහන් වේ. වගා කාලසටහන් ඔබ විසින් ඇතුළත් කරන අතර ස්වාධීනව පරීක්ෂා නොකෙරේ. මෙම පාස්පෝට් එක ණය හෝ ආයෝජන ඉල්ලීමකට සහාය වන නමුත් ණය දෙන්නාගේ තමන්ගේම පරීක්ෂාවන් ප්‍රතිස්ථාපනය නොකරයි.", "விற்பனை, நிதி மற்றும் திருப்பிச் செலுத்துதல் ගොවි Tech செயல்பாடுகளிலிருந்து பதிவாகின்றன. பயிர் காலவரிசைகளை நீங்களே உள்ளிடுகிறீர்கள்; அவை தனியாகச் சரிபார்க்கப்படுவதில்லை. இந்த பாஸ்போர்ட் கடன் அல்லது முதலீட்டுக் கோரிக்கைக்கு ஆதரவாக இருக்கும், ஆனால் கடன் வழங்குபவரின் சொந்தச் சரிபார்ப்புகளுக்கு மாற்றாகாது.",
           ),
         ),
       ],

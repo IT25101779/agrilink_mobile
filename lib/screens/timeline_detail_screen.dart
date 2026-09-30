@@ -144,7 +144,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text(tr("Repay Investors", "ආයෝජකයන්ට ආපසු ගෙවන්න", "முதலீட்டாளர்களுக்குத் திருப்பிச் செலுத்து")),
         content: Text(
-          "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — AgriLink AI doesn't move money directly yet. Your credit score will increase once confirmed.",
+          "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — ගොවි Tech doesn't move money directly yet. Your credit score will increase once confirmed.",
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),

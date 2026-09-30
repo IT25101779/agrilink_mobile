@@ -20,7 +20,7 @@ class ConsentGate {
       builder: (ctx) => AlertDialog(
         title: Text(tr("Your privacy", "ඔබේ රහස්‍යතාව", "உங்கள் தனியுரிமை")),
         content: SingleChildScrollView(
-          child: Text(tr("AgriLink keeps your name, phone, district, farm records and the photos you choose to upload, to run the marketplace and alerts. We do not sell your data. You can download or delete everything anytime in Profile → Settings.", "AgriLink ඔබේ නම, දුරකථනය, දිස්ත්‍රික්කය, ගොවිපල වාර්තා හා ඔබ උඩුගත කරන ඡායාරූප වෙළඳපොළ හා දැනුම්දීම් සඳහා තබා ගනී. ඔබේ දත්ත අපි විකුණන්නේ නැත. ඕනෑම වේලාවක පැතිකඩ → සැකසුම් හි ඒවා බාගත හෝ මකා දැමිය හැක.", "AgriLink உங்கள் பெயர், தொலைபேசி, மாவட்டம், பண்ணைப் பதிவுகள், நீங்கள் பதிவேற்றும் படங்களை சந்தை, எச்சரிக்கைகளுக்காக வைத்திருக்கும். தரவை விற்கமாட்டோம். சுயவிவரம் → அமைப்புகளில் எப்போது வேண்டுமானாலும் பதிவிறக்கலாம்/நீக்கலாம்.")),
+          child: Text(tr("ගොවි Tech keeps your name, phone, district, farm records and the photos you choose to upload, to run the marketplace and alerts. We do not sell your data. You can download or delete everything anytime in Profile → Settings.", "ගොවි Tech ඔබේ නම, දුරකථනය, දිස්ත්‍රික්කය, ගොවිපල වාර්තා හා ඔබ උඩුගත කරන ඡායාරූප වෙළඳපොළ හා දැනුම්දීම් සඳහා තබා ගනී. ඔබේ දත්ත අපි විකුණන්නේ නැත. ඕනෑම වේලාවක පැතිකඩ → සැකසුම් හි ඒවා බාගත හෝ මකා දැමිය හැක.", "ගොවි Tech உங்கள் பெயர், தொலைபேசி, மாவட்டம், பண்ணைப் பதிவுகள், நீங்கள் பதிவேற்றும் படங்களை சந்தை, எச்சரிக்கைகளுக்காக வைத்திருக்கும். தரவை விற்கமாட்டோம். சுயவிவரம் → அமைப்புகளில் எப்போது வேண்டுமானாலும் பதிவிறக்கலாம்/நீக்கலாம்.")),
         ),
         actions: [
           TextButton(onPressed: () => ShareHelper.openLink(HelpApi.privacyUrl), child: Text(tr("Read full notice", "සම්පූර්ණ දැන්වීම කියවන්න", "முழு அறிவிப்பைப் படி"))),
