@@ -4,6 +4,7 @@ import '../widgets/session_guard.dart';
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
@@ -37,6 +38,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
 
   Map<String, dynamic>? _myLorry;
   bool _isTrackingActive = false;
+  bool _isAcceptingCargo = true;
   bool _isLoading = true;
   bool _isSaving = false;
   Timer? _locationPingTimer;
@@ -73,6 +75,7 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
       setState(() {
         _myLorry = result["data"];
         _isTrackingActive = _myLorry?["isTrackingActive"] ?? false;
+        _isAcceptingCargo = _myLorry?["acceptingCargo"] ?? true;
         _vehicleRegController.text = _myLorry?["vehicleRegistrationNo"] ?? "";
         _capacityController.text = "${_myLorry?["totalCapacityKg"] ?? ""}";
         _destinationHub = _myLorry?["destinationHub"] ?? _destinationHubs.first;
@@ -165,6 +168,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     }
   }
 
+  /// "When the lorry is full, the driver should be able to mark it as full
+  /// and stop getting crops." Separate from the GPS tracking switch above —
+  /// a driver can still be visible/moving while refusing new bookings.
+  Future<void> _toggleAcceptingCargo(bool value) async {
+    if (_myLorry == null) return;
+    setState(() => _isAcceptingCargo = value);
+    await ApiService.toggleAcceptingCargo(lorryId: _myLorry!["_id"], acceptingCargo: value);
+    if (mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(
+        value
+            ? tr("You're accepting cargo again.", "ඔබ නැවතත් භාණ්ඩ පරිගාලනය කරයි.", "நீங்கள் மீண்டும் சரக்கு ஏற்கிறீர்கள்.")
+            : tr("Marked full — farmers won't see you for new requests.", "පුරවා ඇත ලෙස සලකුණු කළා — ගොවීන්ට නව ඉල්ලීම් සඳහා ඔබ නොපෙනේ.", "முழுமையானதாகக் குறிக்கப்பட்டது — புதிய கோரிக்கைகளுக்கு விவசாயிகள் உங்களைக் காண மாட்டார்கள்."),
+      )));
+    }
+  }
+
   Future<void> _respondToBooking(String bookingId, String status) async {
     if (_myLorry == null) return;
     final result = await ApiService.updateCargoBooking(
@@ -177,6 +196,12 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
     } else if (mounted) {
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(result["message"] ?? "Update failed.")));
     }
+  }
+
+  Future<void> _callNumber(String? phone) async {
+    if (phone == null || phone.isEmpty) return;
+    final uri = Uri.parse("tel:$phone");
+    if (await canLaunchUrl(uri)) await launchUrl(uri);
   }
 
   Future<void> _logout() async {
@@ -276,6 +301,31 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                       "Remaining capacity: ${_myLorry!["remainingCapacityKg"]} / ${_myLorry!["totalCapacityKg"]} kg",
                       style: const TextStyle(color: Colors.grey, fontSize: 13),
                     ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(14),
+                      decoration: BoxDecoration(
+                        color: _isAcceptingCargo ? const Color(0xFFEFF7F1) : const Color(0xFFFDECEC),
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      child: Row(
+                        children: [
+                          Icon(_isAcceptingCargo ? Icons.inventory_2_outlined : Icons.block_rounded,
+                              color: _isAcceptingCargo ? const Color(0xFF0B5D3B) : Colors.red),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(_isAcceptingCargo
+                                ? tr("Accepting new crops", "අලුත් භාණ්ඩ පිළිගනී", "புதிய சரக்கு ஏற்கிறது")
+                                : tr("Lorry full — not accepting crops", "ලොරිය පුරාය — භාණ්ඩ පිළිගන්නේ නැත", "லாரி முழுமையானது — சரக்கு ஏற்கவில்லை")),
+                          ),
+                          Switch(
+                            value: _isAcceptingCargo,
+                            activeColor: const Color(0xFF0B5D3B),
+                            onChanged: _toggleAcceptingCargo,
+                          ),
+                        ],
+                      ),
+                    ),
                   ],
                   const SizedBox(height: 24),
                   Text("${t("pendingRequests")} (${pendingBookings.length})",
@@ -287,13 +337,22 @@ class _DriverHomeScreenState extends State<DriverHomeScreen> {
                     ...pendingBookings.map((b) => Card(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: ListTile(
-                            title: Text("${b["farmer"]?["fullName"] ?? "Farmer"} — ${b["weightKg"]}kg"),
-                            subtitle: Text(b["farmer"]?["phone"] ?? ""),
+                            title: Text("${b["farmer"]?["fullName"] ?? "Farmer"} — ${b["cropType"] ?? ""} ${b["weightKg"]}kg"),
+                            subtitle: Text([
+                              if (b["calculatedRentLkr"] != null) "Rent: LKR ${b["calculatedRentLkr"]}",
+                              b["farmer"]?["phone"] ?? "",
+                            ].where((s) => s.isNotEmpty).join(" · ")),
                             trailing: Row(
                               mainAxisSize: MainAxisSize.min,
                               children: [
                                 IconButton(
+                                  icon: const Icon(Icons.call_rounded, color: Color(0xFF0B5D3B)),
+                                  tooltip: tr("Call farmer", "ගොවියාට කතා කරන්න", "விவசாயியை அழைக்கவும்"),
+                                  onPressed: () => _callNumber(b["farmer"]?["phone"]),
+                                ),
+                                IconButton(
                                   icon: const Icon(Icons.check_circle, color: Colors.green),
+                                  tooltip: tr("Confirm (after calling)", "තහවුරු කරන්න (කතා කිරීමෙන් පසු)", "உறுதிசெய்க (அழைத்த பிறகு)"),
                                   onPressed: () => _respondToBooking(b["_id"], "confirmed"),
                                 ),
                                 IconButton(

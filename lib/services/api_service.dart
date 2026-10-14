@@ -185,6 +185,41 @@ class ApiService {
     return _handleResponse(response);
   }
 
+  /// "Mark as full" — separate from live GPS tracking. A driver can stay
+  /// visible/moving but refuse any new cargo requests.
+  static Future<Map<String, dynamic>> toggleAcceptingCargo({
+    required String lorryId,
+    required bool acceptingCargo,
+  }) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$baseUrl/logistics/lorries/$lorryId/accepting-cargo"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"acceptingCargo": acceptingCargo}),
+    );
+    return _handleResponse(response);
+  }
+
+  /// The demo/real shop directory for a market hub (e.g. Kandy's numbered
+  /// shops, with a featured default like No. 166).
+  static Future<Map<String, dynamic>> getMarketShops(String market) async {
+    final response = await AppHttp.get(Uri.parse("$baseUrl/logistics/shops?market=$market"));
+    return _handleResponse(response);
+  }
+
+  /// Shows the farmer the tiered rent (LKR 50/kg under 10kg, LKR 20/kg from
+  /// 10kg up — admin-editable) before they commit to a booking.
+  static Future<Map<String, dynamic>> getLorryRentQuote(double weightKg) async {
+    final response = await AppHttp.get(Uri.parse("$baseUrl/logistics/rent-quote?weightKg=$weightKg"));
+    return _handleResponse(response);
+  }
+
+  /// A farmer's own cargo bookings across every lorry — "requested",
+  /// "confirmed" (shows the driver's phone number + call button), etc.
+  static Future<Map<String, dynamic>> getMyCargoBookings() async {
+    final response = await AppHttp.get(Uri.parse("$baseUrl/logistics/lorries/my-bookings"));
+    return _handleResponse(response);
+  }
+
   static Future<Map<String, dynamic>> getMyLorry(String driverId) async {
     final response = await AppHttp.get(Uri.parse("$baseUrl/logistics/lorries/mine?driverId=$driverId"));
     return _handleResponse(response);
@@ -210,6 +245,8 @@ class ApiService {
     required double latitude,
     required double longitude,
     String? listingRef,
+    String? cropType,
+    String? shopId,
   }) async {
     final response = await AppHttp.post(
       Uri.parse("$baseUrl/logistics/lorries/$lorryId/cargo-request"),
@@ -220,6 +257,8 @@ class ApiService {
         "latitude": latitude,
         "longitude": longitude,
         "listingRef": listingRef,
+        "cropType": cropType,
+        "shopId": shopId,
       }),
     );
     return _handleResponse(response);
@@ -367,6 +406,14 @@ class ApiService {
   static Future<Map<String, dynamic>> getMyTimelines(String farmerId, {String? status}) async {
     final statusParam = status != null ? "&status=$status" : "";
     final response = await AppHttp.get(Uri.parse("$baseUrl/timelines/mine?farmerId=$farmerId$statusParam"));
+    return _handleResponse(response);
+  }
+
+  /// DELETE /api/timelines/:localId — removes the farmer's own timeline from
+  /// the server. Safe to call even if the timeline was never synced (the
+  /// backend just reports 404, which the caller treats as "already gone").
+  static Future<Map<String, dynamic>> deleteTimeline(String localId) async {
+    final response = await AppHttp.delete(Uri.parse("$baseUrl/timelines/$localId"));
     return _handleResponse(response);
   }
 

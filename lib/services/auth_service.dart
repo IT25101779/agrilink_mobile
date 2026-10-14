@@ -1,9 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:hive/hive.dart';
 import 'app_http.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'offline_store.dart';
 import 'api_service.dart';
+import '../models/timeline_model.dart';
 
 class AuthService {
   static const String _tokenKey = "auth_token";
@@ -99,6 +101,14 @@ class AuthService {
     await prefs.setString(_userRoleKey, data["user"]["role"]);
   }
 
+  /// BUG FIX (Oct 2026): logout used to clear only SharedPreferences and
+  /// OfflineStore's cache/queue — it never touched the Hive "timelines" box,
+  /// which is a single box shared by every account that ever logs in on
+  /// this phone. That's why switching accounts kept showing the PREVIOUS
+  /// farmer's timelines: their records were still sitting in the box.
+  /// We now wipe that box too on every logout, so the next person who logs
+  /// in on this device starts from a clean slate (their own data gets
+  /// pulled back down fresh from the server by pullRemoteTimelines()).
   static Future<void> logout() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_tokenKey);
@@ -107,6 +117,13 @@ class AuthService {
     await prefs.remove(_userRoleKey);
     await prefs.remove(_districtKey);
     await OfflineStore.clearAll(); // saved copies and waiting records belong to the person who just left
+    try {
+      if (Hive.isBoxOpen("timelines")) {
+        await Hive.box<TimelineModel>("timelines").clear();
+      }
+    } catch (_) {
+      // If the box isn't open for some reason, there's nothing to clear.
+    }
   }
 
   /// After the farmer edits their profile, keep the values stored on the phone in step.

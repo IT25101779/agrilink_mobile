@@ -144,7 +144,7 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
         title: Text(tr("Repay Investors", "ආයෝජකයන්ට ආපසු ගෙවන්න", "முதலீட்டாளர்களுக்குத் திருப்பிச் செலுத்து")),
         content: Text(
-          "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — ගොවි Tech doesn't move money directly yet. Your credit score will increase once confirmed.",
+          "This confirms you're repaying all investors on this campaign in full, outside the app (bank transfer, cash, etc.) — AgriLink AI doesn't move money directly yet. Your credit score will increase once confirmed.",
         ),
         actions: [
           TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
@@ -292,6 +292,45 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
     );
   }
 
+  /// Deletes this timeline — asks for confirmation first (as requested),
+  /// then removes it from the server (if it was ever synced) and from this
+  /// phone's local storage, then leaves the screen.
+  Future<void> _confirmAndDelete(TimelineModel timeline) async {
+    final confirmed = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        title: Text(tr("Delete this timeline?", "මෙම කාලසටහන මකන්නද?", "இந்த காலவரிசையை நீக்கவா?")),
+        content: Text(
+          tr(
+            "This removes \"${timeline.cropType}\" and all its recorded progress. This cannot be undone.",
+            "මෙය \"${timeline.cropType}\" සහ එහි සියලු ප්‍රගති වාර්තා ඉවත් කරයි. මෙය අහෝසි කළ නොහැක.",
+            "இது \"${timeline.cropType}\" மற்றும் அதன் அனைத்து முன்னேற்ற பதிவுகளையும் அகற்றும். இதை மீட்க முடியாது.",
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු කරන්න", "ரத்து செய்"))),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            child: Text(tr("Delete", "මකන්න", "நீக்கு"), style: const TextStyle(color: Colors.red, fontWeight: FontWeight.w700)),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+
+    // Best-effort server delete — if it was never synced (still offline),
+    // the server will just say "not found" and that's fine, we still
+    // remove it locally below.
+    try {
+      await ApiService.deleteTimeline(timeline.localId);
+    } catch (_) {}
+
+    await _box.delete(widget.timelineKey);
+    if (!mounted) return;
+    Navigator.pop(context);
+  }
+
   @override
   Widget build(BuildContext context) {
     final timeline = _box.get(widget.timelineKey);
@@ -315,6 +354,11 @@ class _TimelineDetailScreenState extends State<TimelineDetailScreen> {
             icon: const Icon(Icons.storefront_outlined),
             tooltip: tr("Nearby Suppliers & Rentals", "අවට සැපයුම්කරුවන් සහ කුලී", "அருகிலுள்ள விநியோகஸ்தர்கள் & வாடகை"),
             onPressed: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const SuppliersScreen())),
+          ),
+          IconButton(
+            icon: const Icon(Icons.delete_outline_rounded),
+            tooltip: tr("Delete timeline", "කාලසටහන මකන්න", "காலவரிசையை நீக்கு"),
+            onPressed: () => _confirmAndDelete(timeline),
           ),
         ],
       ),
