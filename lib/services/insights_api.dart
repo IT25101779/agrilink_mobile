@@ -46,6 +46,15 @@ class InsightsApi {
     return _handle(response);
   }
 
+  static Future<Map<String, dynamic>> _patch(String path, [Map<String, dynamic>? body]) async {
+    final response = await AppHttp.patch(
+      Uri.parse("$_base$path"),
+      headers: await _headers(json: true),
+      body: jsonEncode(body ?? <String, dynamic>{}),
+    );
+    return _handle(response);
+  }
+
   // ---------------- Oversupply Guard ----------------
 
   static Future<Map<String, dynamic>> getPlantingSignals({String? district}) {
@@ -153,4 +162,43 @@ class InsightsApi {
   static Future<Map<String, dynamic>> getMyPassport() => _get("/passport/me");
 
   static Future<Map<String, dynamic>> rotatePassportLink() => _post("/passport/rotate");
+
+  // ---------------- District Planting Advisor ----------------
+  // "What should I plant NEXT?" across the whole crop catalogue at once,
+  // not just a warning about a crop you already planted.
+
+  static Future<Map<String, dynamic>> getNextSeasonAdvisor({String? district, double acres = 1}) {
+    final params = <String>["acres=$acres"];
+    if (district != null && district.isNotEmpty) params.add("district=${Uri.encodeQueryComponent(district)}");
+    return _get("/insights/next-season-advisor?${params.join("&")}");
+  }
+
+  // ---------------- Anonymized Benchmarking ----------------
+  // My cost-per-kg vs the district/national average — aggregate numbers
+  // only, never another farmer's name or raw figures.
+
+  static Future<Map<String, dynamic>> getBenchmark() => _get("/insights/benchmark");
+
+  // ---------------- Forward / contract listings ----------------
+  // A buyer locks in a price before harvest; a farmer expresses interest,
+  // calls the buyer, then confirms — same phone-first pattern as everywhere
+  // else in the app. Never an automatic booking, never an online payment.
+
+  static Future<Map<String, dynamic>> listForwardContracts({String? cropType, String? district}) {
+    final params = <String>[];
+    if (cropType != null && cropType.isNotEmpty) params.add("cropType=${Uri.encodeQueryComponent(cropType)}");
+    if (district != null && district.isNotEmpty) params.add("district=${Uri.encodeQueryComponent(district)}");
+    final query = params.isEmpty ? "" : "?${params.join("&")}";
+    return _get("/forward-contracts$query");
+  }
+
+  static Future<Map<String, dynamic>> getMyForwardCommitments() => _get("/forward-contracts/my-commitments");
+
+  static Future<Map<String, dynamic>> expressForwardInterest(String contractId, double quantityKg) {
+    return _post("/forward-contracts/$contractId/interest", {"quantityKg": quantityKg});
+  }
+
+  static Future<Map<String, dynamic>> confirmForwardCommitment(String contractId, String commitmentId) {
+    return _patch("/forward-contracts/$contractId/commitments/$commitmentId/confirm");
+  }
 }

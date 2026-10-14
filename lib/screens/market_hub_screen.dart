@@ -6,6 +6,7 @@ import '../widgets/ui_kit.dart';
 import 'demand_board_screen.dart';
 import 'group_lots_screen.dart';
 import 'marketplace_screen.dart';
+import 'forward_contracts_screen.dart';
 
 /// The "Market" tab: one place for the three ways a farmer sells —
 /// list produce, sell together with neighbours (Group Lots), or answer what
@@ -19,7 +20,7 @@ class MarketHubScreen extends StatefulWidget {
 
 class _MarketHubScreenState extends State<MarketHubScreen> {
   int _index = 0;
-  final List<bool> _visited = [true, false, false];
+  final List<bool> _visited = [true, false, false, false];
 
   Widget _segment(int index, IconData icon, String label) {
     final selected = _index == index;
@@ -76,6 +77,7 @@ class _MarketHubScreenState extends State<MarketHubScreen> {
                   _segment(0, Icons.sell_rounded, tr("Sell", "විකුණන්න", "விற்பனை")),
                   _segment(1, Icons.groups_rounded, tr("Group Lots", "කණ්ඩායම්", "குழுத் தொகுப்புகள்")),
                   _segment(2, Icons.campaign_rounded, tr("Requests", "ඉල්ලීම්", "கோரிக்கைகள்")),
+                  _segment(3, Icons.handshake_rounded, tr("Contracts", "ගිවිසුම්", "ஒப்பந்தங்கள்")),
                 ],
               ),
             ),
@@ -86,6 +88,7 @@ class _MarketHubScreenState extends State<MarketHubScreen> {
                   const MarketplaceScreen(),
                   _visited[1] ? const GroupLotsScreen() : const SizedBox.shrink(),
                   _visited[2] ? const DemandBoardScreen() : const SizedBox.shrink(),
+                  _visited[3] ? const ForwardContractsScreen(embedded: true) : const SizedBox.shrink(),
                 ],
               ),
             ),

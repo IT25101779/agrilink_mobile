@@ -19,6 +19,8 @@ import '../widgets/smooth_route.dart';
 import 'suppliers_screen.dart';
 import 'seasonal_calendar_screen.dart';
 import 'community_marketplace_screen.dart';
+import 'planting_advisor_screen.dart';
+import 'forward_contracts_screen.dart';
 
 class CropNavigatorScreen extends StatefulWidget {
   const CropNavigatorScreen({super.key});
@@ -498,6 +500,27 @@ class _CropNavigatorScreenState extends State<CropNavigatorScreen> {
                   onPressed: () => Navigator.push(context, SmoothRoute(page: const SeasonalCalendarScreen())),
                   icon: const Icon(Icons.calendar_month_outlined, size: 18),
                   label: Text(AppLocale.instance.t("seasonalCalendar")),
+                ),
+              ),
+              const SizedBox(height: 8),
+              // DISTRICT PLANTING ADVISOR: ranks every crop in the catalogue
+              // by expected ROI and nearby competition — "what should I
+              // plant NEXT", not just this one crop's saturation warning.
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: () => Navigator.push(context, SmoothRoute(page: const PlantingAdvisorScreen())),
+                  icon: const Icon(Icons.insights_rounded, size: 18),
+                  label: Text(tr("Full Planting Advisor + my benchmark", "සම්පූර්ණ වැවිලි උපදේශක + මගේ සංසන්දනය", "முழு நடவு ஆலோசகர் + என் ஒப்பீடு")),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                child: OutlinedButton.icon(
+                  onPressed: () => Navigator.push(context, SmoothRoute(page: const ForwardContractsScreen())),
+                  icon: const Icon(Icons.handshake_rounded, size: 18),
+                  label: Text(tr("Forward contracts (price locked ahead)", "අනාගත ගිවිසුම් (මිල කලින් තීරණය)", "முன்கூட்டிய ஒப்பந்தங்கள் (விலை முன்பே நிர்ணயம்)")),
                 ),
               ),
             ],
