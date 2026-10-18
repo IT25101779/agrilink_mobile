@@ -66,6 +66,18 @@ class HelpApi {
   // ---- feedback / verification / payment / privacy ----
   static Future<Map<String, dynamic>> feedback(String kind, String message, String screen) => _queued("/feedback", {"kind": kind, "message": message, "screen": screen, "appVersion": "1.1.0"}, "feedback");
   static Future<Map<String, dynamic>> submitVerification(String docType, String base64) => _post("/auth/verification", {"docType": docType, "imageBase64": base64});
+  static Future<Map<String, dynamic>> submitDriverVerification({
+    required String licenseBase64,
+    required String vehicleLicenseBase64,
+    required String vehicleBase64,
+    required DateTime vehicleLicenseExpiryDate,
+  }) => _post("/auth/verification/driver", {
+        "licenseImageBase64": licenseBase64,
+        "vehicleLicenseImageBase64": vehicleLicenseBase64,
+        "vehicleImageBase64": vehicleBase64,
+        "vehicleLicenseExpiryDate": vehicleLicenseExpiryDate.toIso8601String(),
+      });
+  static Future<Map<String, dynamic>> driverVerificationStatus() => _get("/auth/verification/driver/status");
   static Future<Map<String, dynamic>> getPayment() => _get("/auth/me/payment");
   static Future<Map<String, dynamic>> setPayment(String instructions) => _put("/auth/me/payment", {"instructions": instructions});
   static Future<Map<String, dynamic>> setPaymentQr(String base64) => _put("/auth/me/payment/qr", {"imageBase64": base64});

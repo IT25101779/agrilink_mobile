@@ -9,6 +9,7 @@ import '../widgets/language_toggle.dart';
 import '../widgets/theme_toggle.dart';
 import 'home_screen.dart';
 import 'driver_home_screen.dart';
+import 'driver_pending_screen.dart';
 import 'register_screen.dart';
 import 'forgot_password_screen.dart';
 
@@ -46,9 +47,19 @@ class _LoginScreenState extends State<LoginScreen> {
     if (result["success"] == true) {
       final role = await AuthService.getUserRole();
       if (!mounted) return;
+      final verificationStatus = result["data"]?["user"]?["verification"]?["status"] as String?;
+      final isUnapprovedDriver = role == "driver" && verificationStatus != null && verificationStatus != "verified";
       Navigator.pushAndRemoveUntil(
         context,
-        SmoothRoute(page: role == "driver" ? const DriverHomeScreen() : role == "officer" ? const OfficerHomeScreen() : const HomeScreen()),
+        SmoothRoute(
+          page: isUnapprovedDriver
+              ? const DriverPendingScreen()
+              : role == "driver"
+                  ? const DriverHomeScreen()
+                  : role == "officer"
+                      ? const OfficerHomeScreen()
+                      : const HomeScreen(),
+        ),
         (route) => false,
       );
     } else {

@@ -5,8 +5,7 @@ import '../localization/app_locale.dart';
 import '../widgets/smooth_route.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/language_toggle.dart';
-import 'home_screen.dart';
-import 'driver_home_screen.dart';
+import 'register_otp_screen.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -29,28 +28,50 @@ class _RegisterScreenState extends State<RegisterScreen> {
   String _role = "farmer";
   bool _isLoading = false;
   String? _errorMessage;
+  DateTime? _vehicleLicenseExpiry;
+
+  Future<void> _pickVehicleLicenseExpiry() async {
+    final now = DateTime.now();
+    final picked = await showDatePicker(
+      context: context,
+      initialDate: DateTime(now.year + 1, now.month, now.day),
+      firstDate: now,
+      lastDate: DateTime(now.year + 10),
+    );
+    if (picked != null) setState(() => _vehicleLicenseExpiry = picked);
+  }
 
   Future<void> _register() async {
     if (!_formKey.currentState!.validate()) return;
+    if (_role == "driver" && _vehicleLicenseExpiry == null) {
+      setState(() => _errorMessage = "Please choose the vehicle license expiry date.");
+      return;
+    }
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final result = await AuthService.register(
+    final email = _emailController.text.trim();
+    final farmerProfile = _role == "farmer" ? {"district": _districtController.text.trim()} : null;
+    final driverProfile = _role == "driver"
+        ? {
+            "vehicleRegistrationNo": _vehicleRegController.text.trim(),
+            "vehicleCapacityKg": double.tryParse(_vehicleCapacityController.text) ?? 0,
+            "vehicleLicenseExpiryDate": _vehicleLicenseExpiry!.toIso8601String(),
+          }
+        : null;
+
+    // Step 1 only validates and emails a code — nothing is created yet.
+    final result = await AuthService.registerStart(
       fullName: _nameController.text.trim(),
-      email: _emailController.text.trim(),
+      email: email,
       phone: _phoneController.text.trim(),
       password: _passwordController.text,
       role: _role,
       referralCode: _referralController.text.trim(),
-      farmerProfile: _role == "farmer" ? {"district": _districtController.text.trim()} : null,
-      driverProfile: _role == "driver"
-          ? {
-              "vehicleRegistrationNo": _vehicleRegController.text.trim(),
-              "vehicleCapacityKg": double.tryParse(_vehicleCapacityController.text) ?? 0,
-            }
-          : null,
+      farmerProfile: farmerProfile,
+      driverProfile: driverProfile,
     );
 
     setState(() => _isLoading = false);
@@ -58,10 +79,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
     if (!mounted) return;
 
     if (result["success"] == true) {
-      Navigator.pushAndRemoveUntil(
+      Navigator.push(
         context,
-        SmoothRoute(page: _role == "driver" ? const DriverHomeScreen() : const HomeScreen()),
-        (route) => false,
+        SmoothRoute(
+          page: RegisterOtpScreen(
+            email: email,
+            role: _role,
+            registerArgs: {
+              "fullName": _nameController.text.trim(),
+              "email": email,
+              "phone": _phoneController.text.trim(),
+              "password": _passwordController.text,
+              "role": _role,
+              "farmerProfile": farmerProfile,
+              "driverProfile": driverProfile,
+              "referralCode": _referralController.text.trim(),
+            },
+          ),
+        ),
       );
     } else {
       setState(() => _errorMessage = result["message"] ?? "Registration failed. Please try again.");
@@ -162,6 +197,22 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     keyboardType: TextInputType.number,
                     decoration: InputDecoration(labelText: t("vehicleCapacity"), prefixIcon: const Icon(Icons.scale_outlined, size: 20)),
                     validator: (v) => (v == null || double.tryParse(v) == null) ? "Enter a valid number" : null,
+                  ),
+                  const SizedBox(height: 12),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: const Icon(Icons.event_rounded, size: 20),
+                    title: const Text("Vehicle license expiry date", style: TextStyle(fontSize: 13)),
+                    subtitle: Text(
+                      _vehicleLicenseExpiry == null ? "Tap to choose" : "${_vehicleLicenseExpiry!.day}/${_vehicleLicenseExpiry!.month}/${_vehicleLicenseExpiry!.year}",
+                      style: const TextStyle(fontWeight: FontWeight.w600),
+                    ),
+                    trailing: const Icon(Icons.chevron_right_rounded),
+                    onTap: _pickVehicleLicenseExpiry,
+                  ),
+                  Text(
+                    "You'll also upload your driving license, vehicle license and vehicle photo for admin approval after this step.",
+                    style: const TextStyle(fontSize: 12, color: AppColors.inkMuted),
                   ),
                 ],
                 const SizedBox(height: 12),

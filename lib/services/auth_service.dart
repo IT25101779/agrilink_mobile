@@ -50,6 +50,60 @@ class AuthService {
     return result;
   }
 
+  /// Step 1 of registration: validates the details and emails a 6-digit code.
+  /// Nothing is created yet — the account only exists once [registerVerify] confirms the code.
+  static Future<Map<String, dynamic>> registerStart({
+    required String fullName,
+    required String email,
+    required String phone,
+    required String password,
+    required String role,
+    Map<String, dynamic>? farmerProfile,
+    Map<String, dynamic>? driverProfile,
+    String referralCode = "",
+  }) async {
+    final response = await AppHttp.post(
+      Uri.parse("${ApiService.baseUrl}/auth/register-start"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({
+        "fullName": fullName,
+        "email": email,
+        "phone": phone,
+        "password": password,
+        "role": role,
+        if (farmerProfile != null) "farmerProfile": farmerProfile,
+        if (driverProfile != null) "driverProfile": driverProfile,
+        if (referralCode.isNotEmpty) "referralCode": referralCode,
+      }),
+    );
+    return _handle(response);
+  }
+
+  /// Step 2 of registration: confirms the code and actually creates the account.
+  /// A driver account is created in "pending" state — the token returned here lets
+  /// that same session complete the mandatory profile photo + document upload,
+  /// but any LATER login is blocked until an admin approves (see [login]).
+  static Future<Map<String, dynamic>> registerVerify({
+    required String email,
+    required String otp,
+  }) async {
+    final response = await AppHttp.post(
+      Uri.parse("${ApiService.baseUrl}/auth/register-verify"),
+      headers: {"Content-Type": "application/json"},
+      body: jsonEncode({"email": email, "otp": otp}),
+    );
+    final result = _handle(response);
+    if (result["success"] == true) {
+      await _saveSession(result["data"]);
+      final district = result["data"]?["user"]?["farmerProfile"]?["district"] as String?;
+      if (district != null && district.trim().isNotEmpty) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString(_districtKey, district.trim());
+      }
+    }
+    return result;
+  }
+
   static Future<Map<String, dynamic>> login({
     required String email,
     required String password,

@@ -2,8 +2,10 @@ import 'officer_home_screen.dart';
 import 'package:flutter/material.dart';
 import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
+import '../services/help_api.dart';
 import 'home_screen.dart';
 import 'driver_home_screen.dart';
+import 'driver_pending_screen.dart';
 import 'login_screen.dart';
 import 'onboarding_screen.dart';
 
@@ -38,7 +40,16 @@ class _SplashScreenState extends State<SplashScreen> with SingleTickerProviderSt
 
     Widget destination;
     if (widget.loggedIn) {
-      destination = widget.role == "driver" ? const DriverHomeScreen() : widget.role == "officer" ? const OfficerHomeScreen() : const HomeScreen();
+      if (widget.role == "driver") {
+        // A pending/rejected driver still has a saved session (see login()'s
+        // comment on why), so check the server's current decision on every
+        // app open rather than trusting whatever was true at the last login.
+        final status = await HelpApi.driverVerificationStatus();
+        final verified = status["success"] == true && (status["data"] as Map?)?["status"] == "verified";
+        destination = verified ? const DriverHomeScreen() : const DriverPendingScreen();
+      } else {
+        destination = widget.role == "officer" ? const OfficerHomeScreen() : const HomeScreen();
+      }
     } else {
       final seenOnboarding = await OnboardingScreen.hasSeenOnboarding();
       destination = seenOnboarding ? const LoginScreen() : const OnboardingScreen();
