@@ -11,6 +11,7 @@ import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
 import '../widgets/shimmer_loading.dart';
 import '../localization/tr.dart';
+import '../widgets/crop_picker_field.dart';
 
 const List<String> _destinationHubs = [
   "Any",
@@ -85,6 +86,110 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
     });
   }
 
+  /// "Economic Centers" — lets a farmer browse shops by market and call
+  /// them directly to ask prices or whether a crop sent earlier was sold,
+  /// WITHOUT having to book a lorry first.
+  Future<void> _openEconomicCenters() async {
+    String market = _destinationFilter == "Any" ? "Kandy" : _destinationFilter;
+    List<dynamic> shops = [];
+    bool loading = true;
+
+    await showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      useSafeArea: true,
+      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
+      builder: (context) => StatefulBuilder(
+        builder: (context, setSheetState) {
+          Future<void> load() async {
+            setSheetState(() => loading = true);
+            final result = await ApiService.getMarketShops(market);
+            setSheetState(() {
+              loading = false;
+              shops = result["success"] == true ? (result["data"] as List) : [];
+            });
+          }
+
+          if (loading && shops.isEmpty) {
+            // Kick off the first load once the sheet is built.
+            Future.microtask(load);
+          }
+
+          return Padding(
+            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+            child: SizedBox(
+              height: MediaQuery.of(context).size.height * 0.75,
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: Text(
+                            tr("Economic Centers — call shops to ask prices", "වෙළඳ මධ්‍යස්ථාන — මිල අසන්න", "பொருளாதார நிலையங்கள் — விலை கேளுங்கள்"),
+                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16),
+                    child: DropdownButtonFormField<String>(
+                      value: market,
+                      isExpanded: true,
+                      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
+                      items: _destinationHubs.where((h) => h != "Any").map((h) => DropdownMenuItem(value: h, child: Text(h.replaceAll("_", " ")))).toList(),
+                      onChanged: (v) {
+                        if (v == null) return;
+                        market = v;
+                        load();
+                      },
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Expanded(
+                    child: loading
+                        ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
+                        : shops.isEmpty
+                            ? Center(
+                                child: Text(
+                                  tr("No shops listed for this market yet.", "මෙම වෙළඳපොළට තවම කඩ ලැයිස්තුවක් නැත.", "இந்த சந்தைக்கு இன்னும் கடை பட்டியல் இல்லை."),
+                                  style: const TextStyle(color: Colors.grey),
+                                ),
+                              )
+                            : ListView.builder(
+                                itemCount: shops.length,
+                                itemBuilder: (context, i) {
+                                  final s = shops[i];
+                                  final deals = (s["dealsIn"] as List?)?.join(", ") ?? "";
+                                  return ListTile(
+                                    leading: const Icon(Icons.storefront_rounded, color: Color(0xFF0B5D3B)),
+                                    title: Text("No. ${s["shopNumber"]} — ${s["name"]}${s["isFeatured"] == true ? "  ★" : ""}"),
+                                    subtitle: Text([if (deals.isNotEmpty) deals, s["phone"] ?? ""].where((x) => x.isNotEmpty).join("\n")),
+                                    isThreeLine: deals.isNotEmpty,
+                                    trailing: IconButton(
+                                      icon: const Icon(Icons.call_rounded, color: Color(0xFF0B5D3B)),
+                                      tooltip: tr("Call shop", "කඩයට කතා කරන්න", "கடைக்கு அழைக்கவும்"),
+                                      onPressed: () => _callNumber(s["phone"] as String?),
+                                    ),
+                                  );
+                                },
+                              ),
+                  ),
+                  const SizedBox(height: 8),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Future<void> _loadMyBookings() async {
     setState(() => _isLoadingBookings = true);
     final result = await ApiService.getMyCargoBookings();
@@ -137,9 +242,9 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(
+                  CropPickerField(
                     controller: cropController,
-                    decoration: InputDecoration(labelText: tr("Crop type", "බෝගය", "பயிர் வகை")),
+                    label: tr("Crop type", "බෝගය", "பயிர் வகை"),
                   ),
                   const SizedBox(height: 8),
                   TextField(
@@ -184,6 +289,30 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                           .toList(),
                       onChanged: (v) => setDialogState(() => selectedShopId = v),
                     ),
+                  if (!loadingShops && shops.isNotEmpty && selectedShopId != null)
+                    Builder(builder: (context) {
+                      final selectedShop = shops.firstWhere((s) => s["_id"] == selectedShopId, orElse: () => null);
+                      final shopPhone = selectedShop?["phone"] as String?;
+                      if (shopPhone == null || shopPhone.isEmpty) return const SizedBox.shrink();
+                      return Padding(
+                        padding: const EdgeInsets.only(top: 6),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                "${tr("Call to ask prices first", "මුලින්ම මිල අසන්න", "முதலில் விலை கேளுங்கள்")}: $shopPhone",
+                                style: const TextStyle(fontSize: 12, color: Colors.grey),
+                              ),
+                            ),
+                            TextButton.icon(
+                              onPressed: () => _callNumber(shopPhone),
+                              icon: const Icon(Icons.call_rounded, size: 16),
+                              label: Text(tr("Call shop", "කඩයට කතා කරන්න", "கடைக்கு அழைக்கவும்")),
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
                   const SizedBox(height: 10),
                   Text(
                     tr(
@@ -262,6 +391,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             final isConfirmed = status == "confirmed" || status == "picked_up" || status == "delivered";
             final driverPhone = b["driver"]?["phone"] as String?;
             final shop = b["shop"];
+            final shopPhone = shop?["phone"] as String?;
             return Card(
               margin: const EdgeInsets.only(bottom: 8),
               child: ListTile(
@@ -278,13 +408,23 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                   ].join("\n"),
                 ),
                 isThreeLine: true,
-                trailing: isConfirmed && driverPhone != null
-                    ? IconButton(
+                trailing: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    if (shopPhone != null && shopPhone.isNotEmpty)
+                      IconButton(
+                        icon: const Icon(Icons.storefront_rounded, color: Color(0xFF0B5D3B)),
+                        tooltip: tr("Call shop (ask if sold)", "කඩයට කතා කරන්න (විකුණුවාද බලන්න)", "கடைக்கு அழைக்கவும் (விற்றதா எனக் கேட்க)"),
+                        onPressed: () => _callNumber(shopPhone),
+                      ),
+                    if (isConfirmed && driverPhone != null)
+                      IconButton(
                         icon: const Icon(Icons.call_rounded, color: Color(0xFF0B5D3B)),
                         tooltip: tr("Call driver", "රියදුරුට කතා කරන්න", "ஓட்டுநரை அழைக்கவும்"),
                         onPressed: () => _callNumber(driverPhone),
-                      )
-                    : null,
+                      ),
+                  ],
+                ),
               ),
             );
           }),
@@ -308,6 +448,20 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             const SizedBox(width: 8),
             Expanded(child: OutlinedButton.icon(onPressed: () => showDeliveryCheckSheet(context), icon: const Icon(Icons.ac_unit_rounded, size: 18), label: Text(tr("Freshness check", "නැවුම්බව පරීක්ෂාව", "புத்துணர்ச்சிச் சோதனை"), style: const TextStyle(fontSize: 12)))),
           ]),
+        ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+          child: SizedBox(
+            width: double.infinity,
+            child: OutlinedButton.icon(
+              onPressed: _openEconomicCenters,
+              icon: const Icon(Icons.storefront_rounded, size: 18),
+              label: Text(
+                tr("Economic Centers — ask prices & contact shops", "වෙළඳ මධ්‍යස්ථාන — මිල අසන්න", "பொருளாதார நிலையங்கள் — விலை கேளுங்கள்"),
+                style: const TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
         ),
         _buildMyBookings(),
         Padding(

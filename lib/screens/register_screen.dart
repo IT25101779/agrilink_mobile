@@ -6,6 +6,7 @@ import '../widgets/smooth_route.dart';
 import '../widgets/fade_slide_in.dart';
 import '../widgets/language_toggle.dart';
 import 'register_otp_screen.dart';
+import '../widgets/district_picker_field.dart';
 
 class RegisterScreen extends StatefulWidget {
   const RegisterScreen({super.key});
@@ -180,9 +181,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ),
                 const SizedBox(height: 12),
                 if (_role == "farmer")
-                  TextFormField(
+                  DistrictPickerField(
                     controller: _districtController,
-                    decoration: InputDecoration(labelText: t("district"), prefixIcon: const Icon(Icons.location_on_outlined, size: 20)),
+                    label: t("district"),
                     validator: (v) => (v == null || v.isEmpty) ? "Required" : null,
                   )
                 else ...[

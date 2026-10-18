@@ -9,6 +9,7 @@ import '../services/profile_api.dart';
 import '../theme/app_theme.dart';
 import '../widgets/ui_kit.dart';
 import '../widgets/user_avatar.dart';
+import '../widgets/district_picker_field.dart';
 
 /// Change your name, phone, farm details, profile picture and password.
 class EditProfileScreen extends StatefulWidget {
@@ -226,12 +227,10 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 TextField(controller: _phone, keyboardType: TextInputType.phone, decoration: InputDecoration(labelText: t("phoneNumber"), prefixIcon: const Icon(Icons.phone_rounded))),
                 const SizedBox(height: 14),
                 if (_role == "farmer") ...[
-                  DropdownButtonFormField<String>(
-                    value: _district,
-                    isExpanded: true,
-                    decoration: InputDecoration(labelText: t("district"), prefixIcon: const Icon(Icons.place_rounded)),
-                    items: kChatDistricts.map((d) => DropdownMenuItem(value: d, child: Text(d))).toList(),
-                    onChanged: (v) => setState(() => _district = v),
+                  DistrictPickerField(
+                    controller: TextEditingController(text: _district ?? ""),
+                    label: t("district"),
+                    onSelected: (v) => setState(() => _district = v),
                   ),
                   const SizedBox(height: 14),
                   TextField(controller: _land, keyboardType: const TextInputType.numberWithOptions(decimal: true), decoration: InputDecoration(labelText: t("landSizeAcres"), prefixIcon: const Icon(Icons.landscape_rounded))),
