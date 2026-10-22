@@ -11,6 +11,7 @@ import '../theme/app_theme.dart';
 import '../localization/app_locale.dart';
 import '../widgets/crop_picker_field.dart';
 import '../widgets/ui_kit.dart';
+import '../widgets/ai_advice_disclaimer.dart';
 import '../localization/tr.dart';
 
 class DiseaseScannerScreen extends StatefulWidget {
@@ -195,6 +196,8 @@ class _DiseaseScannerScreenState extends State<DiseaseScannerScreen> {
             t("scanCropSubtitle"),
             style: const TextStyle(color: Colors.grey, fontSize: 13),
           ),
+          const SizedBox(height: 12),
+          const AiAdviceDisclaimer(),
           if (widget.reminderId != null) ...[
             const SizedBox(height: 10),
             Container(
