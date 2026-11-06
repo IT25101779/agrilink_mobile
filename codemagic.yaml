@@ -1,6 +1,5 @@
-# Put this file at the ROOT of the GitHub repo (next to the agrilink_mobile and
-# agrilink-backend folders) and name it exactly: codemagic.yaml
-# Codemagic only looks for it at the repo root, so every script cd's into agrilink_mobile.
+# Save as codemagic.yaml in the ROOT of the GitHub repo
+# (next to the agrilink_mobile and agrilink-backend folders).
 workflows:
   android-apk:
     name: Android APK
@@ -14,8 +13,13 @@ workflows:
           cd agrilink_mobile
           flutter pub get
           flutter build apk --release
+      - name: Show where the APK is
+        script: |
+          find "$CM_BUILD_DIR" -name "*.apk" -not -path "*/intermediates/*" 2>/dev/null
     artifacts:
-      - agrilink_mobile/build/app/outputs/flutter-apk/app-release.apk
+      - agrilink_mobile/build/app/outputs/flutter-apk/*.apk
+      - build/app/outputs/flutter-apk/*.apk
+      - $CM_BUILD_DIR/agrilink_mobile/build/app/outputs/flutter-apk/*.apk
 
   ios-unsigned-sideload:
     name: iOS Unsigned Build for Sideloading
@@ -36,5 +40,10 @@ workflows:
           cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
           cd build/ios/iphoneos
           zip -r GoviTech-unsigned.ipa Payload
+      - name: Show where the IPA is
+        script: |
+          find "$CM_BUILD_DIR" -name "*.ipa" 2>/dev/null
     artifacts:
-      - agrilink_mobile/build/ios/iphoneos/GoviTech-unsigned.ipa
+      - agrilink_mobile/build/ios/iphoneos/*.ipa
+      - build/ios/iphoneos/*.ipa
+      - $CM_BUILD_DIR/agrilink_mobile/build/ios/iphoneos/*.ipa
