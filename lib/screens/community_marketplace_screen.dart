@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/demo_location.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
@@ -36,8 +37,8 @@ class _CommunityMarketplaceScreenState extends State<CommunityMarketplaceScreen>
   List<dynamic> _listings = [];
   bool _isLoading = true;
   String? _errorMessage;
-  double _latitude = 7.2906;
-  double _longitude = 80.6337;
+  double _latitude = kFallbackLat;
+  double _longitude = kFallbackLng;
 
   @override
   void initState() {
@@ -62,8 +63,8 @@ class _CommunityMarketplaceScreenState extends State<CommunityMarketplaceScreen>
       }
     } catch (_) {}
 
-    final latitude = position?.latitude ?? 7.2906;
-    final longitude = position?.longitude ?? 80.6337;
+    final latitude = position?.latitude ?? kFallbackLat;
+    final longitude = position?.longitude ?? kFallbackLng;
     _latitude = latitude;
     _longitude = longitude;
 

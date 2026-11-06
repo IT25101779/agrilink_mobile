@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/demo_location.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
@@ -58,8 +59,8 @@ class _PostCommunityListingScreenState extends State<PostCommunityListingScreen>
     } catch (_) {}
 
     final farmerId = await AuthService.getUserId() ?? "";
-    final latitude = position?.latitude ?? 7.2906;
-    final longitude = position?.longitude ?? 80.6337;
+    final latitude = position?.latitude ?? kFallbackLat;
+    final longitude = position?.longitude ?? kFallbackLng;
 
     final result = await ApiService.createCommunityListing(
       farmerId: farmerId,

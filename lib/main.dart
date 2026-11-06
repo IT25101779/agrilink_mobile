@@ -10,6 +10,7 @@ import 'theme/app_theme.dart';
 import 'theme/theme_controller.dart';
 import 'services/app_settings.dart';
 import 'services/offline_store.dart';
+import 'widgets/keyboard_dismiss.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -49,11 +50,13 @@ class AgriLinkApp extends StatelessWidget {
       listenable: Listenable.merge([AppLocale.instance, ThemeController.instance]),
       builder: (context, _) {
         return MaterialApp(
-          title: "ගොවි Tech",
+          title: "AgriLink AI 2.0",
           debugShowCheckedModeBanner: false,
           theme: AppTheme.light,
           darkTheme: AppTheme.dark,
           themeMode: ThemeController.instance.mode,
+          // Closes the keyboard on outside-tap and adds a "Done" bar above it (iPhone has no such button).
+          builder: (context, child) => KeyboardDismissScope(child: child ?? const SizedBox.shrink()),
           home: SplashScreen(loggedIn: loggedIn, role: role),
         );
       },

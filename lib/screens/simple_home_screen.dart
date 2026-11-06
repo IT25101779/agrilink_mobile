@@ -13,6 +13,7 @@ import 'market_hub_screen.dart';
 import 'orders_screen.dart';
 import 'price_board_screen.dart';
 import 'timeline_list_screen.dart';
+import '../widgets/with_back_bar.dart';
 
 /// Simple mode: a few very large picture buttons. Press and hold a button to hear its name.
 class SimpleHomeScreen extends StatelessWidget {
@@ -38,7 +39,7 @@ class SimpleHomeScreen extends StatelessWidget {
         );
     return Scaffold(
       appBar: AppBar(
-        title: Text(tr("ගොවි Tech", "ගොවි Tech", "ගොවි Tech")),
+        title: Text(tr("AgriLink", "AgriLink", "AgriLink")),
         actions: [
           const LanguageToggle(),
           IconButton(tooltip: tr("Normal view", "සාමාන්‍ය දර්ශනය", "சாதாரண காட்சி"), icon: const Icon(Icons.apps_rounded), onPressed: () async {
@@ -53,13 +54,13 @@ class SimpleHomeScreen extends StatelessWidget {
         crossAxisSpacing: 14,
         mainAxisSpacing: 14,
         children: [
-          big(Icons.checklist_rounded, AppColors.forest, tr("My crops", "මගේ බෝග", "என் பயிர்கள்"), const TimelineListScreen()),
+          big(Icons.checklist_rounded, AppColors.forest, tr("My crops", "මගේ බෝග", "என் பயிர்கள்"), WithBackBar(title: tr("My crops", "මගේ බෝග", "என் பயிர்கள்"), child: const TimelineListScreen())),
           big(Icons.show_chart_rounded, const Color(0xFFEA580C), tr("Prices", "මිල", "விலைகள்"), const PriceBoardScreen()),
-          big(Icons.storefront_rounded, const Color(0xFF2563EB), tr("Sell", "විකුණන්න", "விற்க"), const MarketHubScreen()),
+          big(Icons.storefront_rounded, const Color(0xFF2563EB), tr("Sell", "විකුණන්න", "விற்க"), WithBackBar(title: tr("Sell", "විකුණන්න", "விற்க"), child: const MarketHubScreen())),
           big(Icons.receipt_long_rounded, const Color(0xFF7C3AED), tr("My orders", "මගේ ඇණවුම්", "என் ஆர்டர்கள்"), const OrdersScreen()),
           big(Icons.document_scanner_rounded, const Color(0xFFB91C1C), tr("Check my crop", "බෝගය පරීක්ෂා කරන්න", "பயிரைச் சோதி"), const DiseaseScannerScreen()),
           big(Icons.support_agent_rounded, const Color(0xFF0E7490), tr("Ask for help", "උදව් ඉල්ලන්න", "உதவி கேள்"), const HelpHubScreen()),
-          big(Icons.chat_rounded, const Color(0xFF059669), tr("Talk to ගොවි Tech", "ගොවි Tech සමඟ කතා කරන්න", "ගොවි Tech உடன் பேசு"), const ChatHubScreen()),
+          big(Icons.chat_rounded, const Color(0xFF059669), tr("Talk to AgriLink", "AgriLink සමඟ කතා කරන්න", "AgriLink உடன் பேசு"), WithBackBar(title: tr("Talk to AgriLink", "AgriLink සමඟ කතා කරන්න", "AgriLink உடன் பேசு"), child: const ChatHubScreen())),
           big(Icons.account_balance_wallet_rounded, const Color(0xFF475569), tr("Money book", "මුදල් පොත", "பணப் புத்தகம்"), const LedgerScreen()),
         ],
       ),

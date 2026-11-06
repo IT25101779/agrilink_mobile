@@ -1,17 +1,16 @@
 import '../widgets/ad_banner.dart';
+import '../services/demo_location.dart';
 import '../widgets/delivery_check_sheet.dart';
 import '../widgets/smooth_route.dart';
 import '../localization/tr.dart';
 import 'return_trips_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
-import 'package:url_launcher/url_launcher.dart';
 import '../services/api_service.dart';
 import '../services/auth_service.dart';
 import '../localization/app_locale.dart';
 import '../widgets/shimmer_loading.dart';
 import '../localization/tr.dart';
-import '../widgets/crop_picker_field.dart';
 
 const List<String> _destinationHubs = [
   "Any",
@@ -36,15 +35,6 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
   bool _isLoading = false;
   String? _statusMessage;
 
-  List<dynamic> _myBookings = [];
-  bool _isLoadingBookings = false;
-
-  Future<void> _callNumber(String? phone) async {
-    if (phone == null || phone.isEmpty) return;
-    final uri = Uri.parse("tel:$phone");
-    if (await canLaunchUrl(uri)) await launchUrl(uri);
-  }
-
   Future<void> _searchNearbyLorries() async {
     setState(() {
       _isLoading = true;
@@ -64,8 +54,8 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
       // fall back below
     }
 
-    final latitude = position?.latitude ?? 7.2906;
-    final longitude = position?.longitude ?? 80.6337;
+    final latitude = position?.latitude ?? kFallbackLat;
+    final longitude = position?.longitude ?? kFallbackLng;
 
     final result = await ApiService.getNearbyLorries(
       latitude: latitude,
@@ -86,251 +76,25 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
     });
   }
 
-  /// "Economic Centers" — lets a farmer browse shops by market and call
-  /// them directly to ask prices or whether a crop sent earlier was sold,
-  /// WITHOUT having to book a lorry first.
-  Future<void> _openEconomicCenters() async {
-    String market = _destinationFilter == "Any" ? "Kandy" : _destinationFilter;
-    List<dynamic> shops = [];
-    bool loading = true;
-
-    await showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      useSafeArea: true,
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.vertical(top: Radius.circular(20))),
-      builder: (context) => StatefulBuilder(
-        builder: (context, setSheetState) {
-          Future<void> load() async {
-            setSheetState(() => loading = true);
-            final result = await ApiService.getMarketShops(market);
-            setSheetState(() {
-              loading = false;
-              shops = result["success"] == true ? (result["data"] as List) : [];
-            });
-          }
-
-          if (loading && shops.isEmpty) {
-            // Kick off the first load once the sheet is built.
-            Future.microtask(load);
-          }
-
-          return Padding(
-            padding: EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: SizedBox(
-              height: MediaQuery.of(context).size.height * 0.75,
-              child: Column(
-                children: [
-                  const SizedBox(height: 10),
-                  Container(width: 40, height: 4, decoration: BoxDecoration(color: Colors.grey.shade400, borderRadius: BorderRadius.circular(2))),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 14, 16, 4),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: Text(
-                            tr("Economic Centers — call shops to ask prices", "වෙළඳ මධ්‍යස්ථාන — මිල අසන්න", "பொருளாதார நிலையங்கள் — விலை கேளுங்கள்"),
-                            style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 16),
-                    child: DropdownButtonFormField<String>(
-                      value: market,
-                      isExpanded: true,
-                      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-                      items: _destinationHubs.where((h) => h != "Any").map((h) => DropdownMenuItem(value: h, child: Text(h.replaceAll("_", " ")))).toList(),
-                      onChanged: (v) {
-                        if (v == null) return;
-                        market = v;
-                        load();
-                      },
-                    ),
-                  ),
-                  const SizedBox(height: 8),
-                  Expanded(
-                    child: loading
-                        ? const Center(child: CircularProgressIndicator(strokeWidth: 2))
-                        : shops.isEmpty
-                            ? Center(
-                                child: Text(
-                                  tr("No shops listed for this market yet.", "මෙම වෙළඳපොළට තවම කඩ ලැයිස්තුවක් නැත.", "இந்த சந்தைக்கு இன்னும் கடை பட்டியல் இல்லை."),
-                                  style: const TextStyle(color: Colors.grey),
-                                ),
-                              )
-                            : ListView.builder(
-                                itemCount: shops.length,
-                                itemBuilder: (context, i) {
-                                  final s = shops[i];
-                                  final deals = (s["dealsIn"] as List?)?.join(", ") ?? "";
-                                  return ListTile(
-                                    leading: const Icon(Icons.storefront_rounded, color: Color(0xFF0B5D3B)),
-                                    title: Text("No. ${s["shopNumber"]} — ${s["name"]}${s["isFeatured"] == true ? "  ★" : ""}"),
-                                    subtitle: Text([if (deals.isNotEmpty) deals, s["phone"] ?? ""].where((x) => x.isNotEmpty).join("\n")),
-                                    isThreeLine: deals.isNotEmpty,
-                                    trailing: IconButton(
-                                      icon: const Icon(Icons.call_rounded, color: Color(0xFF0B5D3B)),
-                                      tooltip: tr("Call shop", "කඩයට කතා කරන්න", "கடைக்கு அழைக்கவும்"),
-                                      onPressed: () => _callNumber(s["phone"] as String?),
-                                    ),
-                                  );
-                                },
-                              ),
-                  ),
-                  const SizedBox(height: 8),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
-    );
-  }
-
-  Future<void> _loadMyBookings() async {
-    setState(() => _isLoadingBookings = true);
-    final result = await ApiService.getMyCargoBookings();
-    setState(() {
-      _isLoadingBookings = false;
-      if (result["success"] == true) _myBookings = result["data"] as List;
-    });
-  }
-
   Future<void> _requestCargoSpace(Map<String, dynamic> lorry) async {
     final weightController = TextEditingController();
-    final cropController = TextEditingController();
-    List<dynamic> shops = [];
-    String? selectedShopId;
-    int? rentLkr;
-    bool loadingShops = true;
-
-    // Load the shop directory for this lorry's destination market, and
-    // pre-select the market's featured/most-chosen shop (e.g. Kandy's
-    // No. 166, Samansiri Holdings) if there is one.
-    final shopResult = await ApiService.getMarketShops(lorry["destinationHub"] ?? "");
-    if (shopResult["success"] == true) {
-      shops = shopResult["data"] as List;
-      final featured = shops.where((s) => s["isFeatured"] == true).toList();
-      selectedShopId = (featured.isNotEmpty ? featured.first : (shops.isNotEmpty ? shops.first : null))?["_id"];
-    }
-    loadingShops = false;
 
     final confirmed = await showDialog<bool>(
       context: context,
-      builder: (context) => StatefulBuilder(
-        builder: (context, setDialogState) {
-          Future<void> recalcRent(String text) async {
-            final w = double.tryParse(text);
-            if (w == null || w <= 0) {
-              setDialogState(() => rentLkr = null);
-              return;
-            }
-            final quote = await ApiService.getLorryRentQuote(w);
-            if (quote["success"] == true) {
-              setDialogState(() => rentLkr = quote["data"]["rentLkr"] as int);
-            }
-          }
-
-          return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
-            title: Text("${tr("Book space on", "ඉඩ වෙන් කරන්න", "இடம் பதிவு செய்")} ${lorry["vehicleRegistrationNo"]}"),
-            content: SingleChildScrollView(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  CropPickerField(
-                    controller: cropController,
-                    label: tr("Crop type", "බෝගය", "பயிர் வகை"),
-                  ),
-                  const SizedBox(height: 8),
-                  TextField(
-                    controller: weightController,
-                    keyboardType: TextInputType.number,
-                    onChanged: recalcRent,
-                    decoration: InputDecoration(
-                      labelText: tr("Weight to send (kg)", "යැවිය යුතු බර (කි.ග්‍රෑ.)", "அனுப்ப வேண்டிய எடை (கி.கி.)"),
-                      helperText: "Available: ${lorry["remainingCapacityKg"]}kg",
-                    ),
-                  ),
-                  if (rentLkr != null)
-                    Padding(
-                      padding: const EdgeInsets.only(top: 6),
-                      child: Text(
-                        "${tr("Estimated truck rent", "ඇස්තමේන්තුගත කුලිය", "மதிப்பிடப்பட்ட வாடகை")}: LKR $rentLkr",
-                        style: const TextStyle(fontWeight: FontWeight.w700, color: Color(0xFF0B5D3B)),
-                      ),
-                    ),
-                  const SizedBox(height: 12),
-                  Text(tr("Which shop should we deliver to?", "බෙදා දිය යුතු කඩය කුමක්ද?", "எந்தக் கடைக்கு வழங்க வேண்டும்?"),
-                      style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 13)),
-                  const SizedBox(height: 6),
-                  if (loadingShops)
-                    const Padding(padding: EdgeInsets.all(8), child: CircularProgressIndicator(strokeWidth: 2))
-                  else if (shops.isEmpty)
-                    Text(tr("No shop list yet for this market.", "මෙම වෙළඳපොළට තවම කඩ ලැයිස්තුවක් නැත.", "இந்த சந்தைக்கு இன்னும் கடை பட்டியல் இல்லை."),
-                        style: const TextStyle(color: Colors.grey, fontSize: 12))
-                  else
-                    DropdownButtonFormField<String>(
-                      value: selectedShopId,
-                      isExpanded: true,
-                      decoration: const InputDecoration(border: OutlineInputBorder(), isDense: true),
-                      items: shops
-                          .map<DropdownMenuItem<String>>((s) => DropdownMenuItem(
-                                value: s["_id"] as String,
-                                child: Text(
-                                  "No. ${s["shopNumber"]} — ${s["name"]}${s["isFeatured"] == true ? "  ★" : ""}",
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ))
-                          .toList(),
-                      onChanged: (v) => setDialogState(() => selectedShopId = v),
-                    ),
-                  if (!loadingShops && shops.isNotEmpty && selectedShopId != null)
-                    Builder(builder: (context) {
-                      final selectedShop = shops.firstWhere((s) => s["_id"] == selectedShopId, orElse: () => null);
-                      final shopPhone = selectedShop?["phone"] as String?;
-                      if (shopPhone == null || shopPhone.isEmpty) return const SizedBox.shrink();
-                      return Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: Text(
-                                "${tr("Call to ask prices first", "මුලින්ම මිල අසන්න", "முதலில் விலை கேளுங்கள்")}: $shopPhone",
-                                style: const TextStyle(fontSize: 12, color: Colors.grey),
-                              ),
-                            ),
-                            TextButton.icon(
-                              onPressed: () => _callNumber(shopPhone),
-                              icon: const Icon(Icons.call_rounded, size: 16),
-                              label: Text(tr("Call shop", "කඩයට කතා කරන්න", "கடைக்கு அழைக்கவும்")),
-                            ),
-                          ],
-                        ),
-                      );
-                    }),
-                  const SizedBox(height: 10),
-                  Text(
-                    tr(
-                      "No online booking is placed yet — the driver must confirm by phone before this is final.",
-                      "තවම මාර්ගගත වෙන්කිරීමක් සිදු නොවේ — අවසන් වීමට පෙර රියදුරු දුරකථනයෙන් තහවුරු කළ යුතුය.",
-                      "இன்னும் ஆன்லைன் முன்பதிவு செய்யப்படவில்லை — உறுதி செய்வதற்கு முன் ஓட்டுநர் தொலைபேசியில் உறுதிப்படுத்த வேண்டும்.",
-                    ),
-                    style: const TextStyle(fontSize: 11, color: Colors.grey),
-                  ),
-                ],
-              ),
-            ),
-            actions: [
-              TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
-              ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Request", "ඉල්ලන්න", "கோரு"))),
-            ],
-          );
-        },
+      builder: (context) => AlertDialog(
+        title: Text("Request space on ${lorry["vehicleRegistrationNo"]}"),
+        content: TextField(
+          controller: weightController,
+          keyboardType: TextInputType.number,
+          decoration: InputDecoration(
+            labelText: tr("Weight to send (kg)", "යැවිය යුතු බර (කි.ග්‍රෑ.)", "அனுப்ப வேண்டிய எடை (கி.கி.)"),
+            helperText: "Available: ${lorry["remainingCapacityKg"]}kg",
+          ),
+        ),
+        actions: [
+          TextButton(onPressed: () => Navigator.pop(context, false), child: Text(tr("Cancel", "අවලංගු", "ரத்து செய்"))),
+          ElevatedButton(onPressed: () => Navigator.pop(context, true), child: Text(tr("Request", "ඉල්ලන්න", "கோரு"))),
+        ],
       ),
     );
 
@@ -348,10 +112,8 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
       lorryId: lorry["_id"],
       farmerId: farmerId,
       weightKg: weight,
-      latitude: position?.latitude ?? 7.2906,
-      longitude: position?.longitude ?? 80.6337,
-      cropType: cropController.text.trim().isEmpty ? null : cropController.text.trim(),
-      shopId: selectedShopId,
+      latitude: position?.latitude ?? kFallbackLat,
+      longitude: position?.longitude ?? kFallbackLng,
     );
 
     if (!mounted) return;
@@ -361,7 +123,6 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
         SnackBar(content: Text(tr("Cargo space requested! The driver will confirm shortly.", "භාණ්ඩ ඉඩ ඉල්ලා ඇත! රියදුරු ඉක්මනින් තහවුරු කරනු ඇත.", "சரக்கு இடம் கோரப்பட்டது! ஓட்டுநர் விரைவில் உறுதிப்படுத்துவார்."))),
       );
       _searchNearbyLorries();
-      _loadMyBookings();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(result["message"] ?? "Request failed.")),
@@ -373,65 +134,6 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
   void initState() {
     super.initState();
     _searchNearbyLorries();
-    _loadMyBookings();
-  }
-
-  Widget _buildMyBookings() {
-    if (_isLoadingBookings) return const SizedBox.shrink();
-    if (_myBookings.isEmpty) return const SizedBox.shrink();
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(16, 4, 16, 0),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(tr("Your truck requests", "ඔබේ ලොරි ඉල්ලීම්", "உங்கள் லாரி கோரிக்கைகள்"), style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 14)),
-          const SizedBox(height: 6),
-          ..._myBookings.map((b) {
-            final status = b["status"] as String? ?? "requested";
-            final isConfirmed = status == "confirmed" || status == "picked_up" || status == "delivered";
-            final driverPhone = b["driver"]?["phone"] as String?;
-            final shop = b["shop"];
-            final shopPhone = shop?["phone"] as String?;
-            return Card(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: ListTile(
-                leading: Icon(
-                  isConfirmed ? Icons.check_circle_rounded : Icons.hourglass_top_rounded,
-                  color: isConfirmed ? const Color(0xFF0B5D3B) : Colors.orange,
-                ),
-                title: Text("${b["cropType"] ?? ""} · ${b["weightKg"]}kg → ${(b["destinationHub"] ?? "").toString().replaceAll("_", " ")}"),
-                subtitle: Text(
-                  [
-                    if (b["calculatedRentLkr"] != null) "${tr("Rent", "කුලිය", "வாடகை")}: LKR ${b["calculatedRentLkr"]}",
-                    if (shop != null) "${tr("Shop", "කඩය", "கடை")}: No. ${shop["shopNumber"]} ${shop["name"]}",
-                    "${tr("Status", "තත්ත්වය", "நிலை")}: $status",
-                  ].join("\n"),
-                ),
-                isThreeLine: true,
-                trailing: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (shopPhone != null && shopPhone.isNotEmpty)
-                      IconButton(
-                        icon: const Icon(Icons.storefront_rounded, color: Color(0xFF0B5D3B)),
-                        tooltip: tr("Call shop (ask if sold)", "කඩයට කතා කරන්න (විකුණුවාද බලන්න)", "கடைக்கு அழைக்கவும் (விற்றதா எனக் கேட்க)"),
-                        onPressed: () => _callNumber(shopPhone),
-                      ),
-                    if (isConfirmed && driverPhone != null)
-                      IconButton(
-                        icon: const Icon(Icons.call_rounded, color: Color(0xFF0B5D3B)),
-                        tooltip: tr("Call driver", "රියදුරුට කතා කරන්න", "ஓட்டுநரை அழைக்கவும்"),
-                        onPressed: () => _callNumber(driverPhone),
-                      ),
-                  ],
-                ),
-              ),
-            );
-          }),
-          const SizedBox(height: 8),
-        ],
-      ),
-    );
   }
 
   @override
@@ -449,21 +151,6 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             Expanded(child: OutlinedButton.icon(onPressed: () => showDeliveryCheckSheet(context), icon: const Icon(Icons.ac_unit_rounded, size: 18), label: Text(tr("Freshness check", "නැවුම්බව පරීක්ෂාව", "புத்துணர்ச்சிச் சோதனை"), style: const TextStyle(fontSize: 12)))),
           ]),
         ),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
-          child: SizedBox(
-            width: double.infinity,
-            child: OutlinedButton.icon(
-              onPressed: _openEconomicCenters,
-              icon: const Icon(Icons.storefront_rounded, size: 18),
-              label: Text(
-                tr("Economic Centers — ask prices & contact shops", "වෙළඳ මධ්‍යස්ථාන — මිල අසන්න", "பொருளாதார நிலையங்கள் — விலை கேளுங்கள்"),
-                style: const TextStyle(fontSize: 12),
-              ),
-            ),
-          ),
-        ),
-        _buildMyBookings(),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
@@ -527,7 +214,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
                             isThreeLine: true,
                             trailing: ElevatedButton(
                               onPressed: () => _requestCargoSpace(lorry),
-
+                               
                               child: Text(AppLocale.instance.t("requestSpace")),
                             ),
                           ),
