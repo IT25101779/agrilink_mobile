@@ -1,5 +1,5 @@
-# Save as codemagic.yaml in the ROOT of the GitHub repo
-# (next to the agrilink_mobile and agrilink-backend folders).
+# Save as codemagic.yaml in the ROOT of github.com/IT25101779/agrilink_mobile
+# (the same folder that contains pubspec.yaml, lib/, android/, ios/).
 workflows:
   android-apk:
     name: Android APK
@@ -8,18 +8,20 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Get packages and build APK
+      - name: Check project layout
         script: |
-          cd agrilink_mobile
+          set -ex
+          pwd
+          ls
+          test -f pubspec.yaml
+      - name: Build APK
+        script: |
+          set -ex
           flutter pub get
           flutter build apk --release
-      - name: Show where the APK is
-        script: |
-          find "$CM_BUILD_DIR" -name "*.apk" -not -path "*/intermediates/*" 2>/dev/null
+          ls -la build/app/outputs/flutter-apk/
     artifacts:
-      - agrilink_mobile/build/app/outputs/flutter-apk/*.apk
       - build/app/outputs/flutter-apk/*.apk
-      - $CM_BUILD_DIR/agrilink_mobile/build/app/outputs/flutter-apk/*.apk
 
   ios-unsigned-sideload:
     name: iOS Unsigned Build for Sideloading
@@ -30,9 +32,15 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
+      - name: Check project layout
+        script: |
+          set -ex
+          pwd
+          ls
+          test -f pubspec.yaml
       - name: Build and package unsigned .ipa
         script: |
-          cd agrilink_mobile
+          set -ex
           flutter pub get
           cd ios && pod install && cd ..
           flutter build ios --release --no-codesign
@@ -40,10 +48,6 @@ workflows:
           cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
           cd build/ios/iphoneos
           zip -r GoviTech-unsigned.ipa Payload
-      - name: Show where the IPA is
-        script: |
-          find "$CM_BUILD_DIR" -name "*.ipa" 2>/dev/null
+          ls -la
     artifacts:
-      - agrilink_mobile/build/ios/iphoneos/*.ipa
       - build/ios/iphoneos/*.ipa
-      - $CM_BUILD_DIR/agrilink_mobile/build/ios/iphoneos/*.ipa
