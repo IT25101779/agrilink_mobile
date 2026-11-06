@@ -1,5 +1,4 @@
-# Save as codemagic.yaml in the ROOT of github.com/IT25101779/agrilink_mobile
-# (the same folder that contains pubspec.yaml, lib/, android/, ios/).
+# Save as codemagic.yaml next to pubspec.yaml in the agrilink_mobile repo.
 workflows:
   android-apk:
     name: Android APK
@@ -8,19 +7,16 @@ workflows:
     environment:
       flutter: stable
     scripts:
-      - name: Check project layout
-        script: |
-          set -ex
-          pwd
-          ls
-          test -f pubspec.yaml
       - name: Build APK
         script: |
           set -ex
+          test -f pubspec.yaml
           flutter pub get
           flutter build apk --release
-          ls -la build/app/outputs/flutter-apk/
+          cp build/app/outputs/flutter-apk/app-release.apk "$CM_BUILD_DIR/GoviTech.apk"
+          ls -la "$CM_BUILD_DIR"
     artifacts:
+      - GoviTech.apk
       - build/app/outputs/flutter-apk/*.apk
 
   ios-unsigned-sideload:
@@ -32,22 +28,21 @@ workflows:
       xcode: latest
       cocoapods: default
     scripts:
-      - name: Check project layout
-        script: |
-          set -ex
-          pwd
-          ls
-          test -f pubspec.yaml
       - name: Build and package unsigned .ipa
         script: |
           set -ex
+          test -f pubspec.yaml
           flutter pub get
           cd ios && pod install && cd ..
           flutter build ios --release --no-codesign
-          mkdir -p build/ios/iphoneos/Payload
-          cp -r build/ios/iphoneos/Runner.app build/ios/iphoneos/Payload/Runner.app
-          cd build/ios/iphoneos
-          zip -r GoviTech-unsigned.ipa Payload
-          ls -la
+          ls -la build/ios/iphoneos/
+          rm -rf "$CM_BUILD_DIR/Payload" "$CM_BUILD_DIR/GoviTech-unsigned.ipa"
+          mkdir -p "$CM_BUILD_DIR/Payload"
+          cp -R build/ios/iphoneos/Runner.app "$CM_BUILD_DIR/Payload/Runner.app"
+          cd "$CM_BUILD_DIR"
+          zip -qry GoviTech-unsigned.ipa Payload
+          ls -la "$CM_BUILD_DIR"
+          find "$CM_BUILD_DIR" -maxdepth 4 -name "*.ipa"
     artifacts:
-      - build/ios/iphoneos/*.ipa
+      - GoviTech-unsigned.ipa
+      - build/ios/iphoneos/*.app
