@@ -22,6 +22,7 @@ class EconomicCentresStrip extends StatefulWidget {
 class _EconomicCentresStripState extends State<EconomicCentresStrip> {
   List<Map<String, dynamic>> _items = [];
   bool _loading = true;
+  bool _failed = false;
 
   @override
   void initState() {
@@ -30,17 +31,37 @@ class _EconomicCentresStripState extends State<EconomicCentresStrip> {
   }
 
   Future<void> _load() async {
+    if (mounted) setState(() { _loading = true; _failed = false; });
     final r = await HelpApi.economicCentres();
     if (!mounted) return;
     setState(() {
       _loading = false;
-      if (r["success"] == true) _items = _asMaps(r["data"]);
+      if (r["success"] == true) {
+        _items = _asMaps(r["data"]);
+      } else {
+        _failed = true;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (!_loading && _items.isEmpty) return const SizedBox.shrink();
+    if (!_loading && _failed) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: OutlinedButton.icon(
+          onPressed: _load,
+          icon: const Icon(Icons.refresh_rounded, size: 18),
+          label: Text(tr("Economic centres - tap to retry", "ආර්ථික මධ්‍යස්ථාන - නැවත උත්සාහ කරන්න", "பொருளாதார மையங்கள் - மீண்டும் முயற்சிக்கவும்"), style: const TextStyle(fontSize: 12)),
+        ),
+      );
+    }
+    if (!_loading && _items.isEmpty) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
+        child: Text(tr("No economic centres added yet.", "ආර්ථික මධ්‍යස්ථාන තවම එක් කර නැත.", "பொருளாதார மையங்கள் இன்னும் சேர்க்கப்படவில்லை."), style: TextStyle(fontSize: 12, color: mutedOf(context))),
+      );
+    }
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
