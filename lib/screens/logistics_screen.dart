@@ -4,6 +4,7 @@ import '../widgets/delivery_check_sheet.dart';
 import '../widgets/smooth_route.dart';
 import '../localization/tr.dart';
 import 'return_trips_screen.dart';
+import 'economic_centres_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import '../services/api_service.dart';
@@ -151,6 +152,7 @@ class _LogisticsScreenState extends State<LogisticsScreen> {
             Expanded(child: OutlinedButton.icon(onPressed: () => showDeliveryCheckSheet(context), icon: const Icon(Icons.ac_unit_rounded, size: 18), label: Text(tr("Freshness check", "නැවුම්බව පරීක්ෂාව", "புத்துணர்ச்சிச் சோதனை"), style: const TextStyle(fontSize: 12)))),
           ]),
         ),
+        const EconomicCentresStrip(),
         Padding(
           padding: const EdgeInsets.all(16),
           child: Row(
